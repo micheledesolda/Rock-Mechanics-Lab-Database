@@ -1,0 +1,23 @@
+/EPS_database
+|-- /src
+|   |-- /daos
+|   |   |-- base_dao.py
+|   |   |-- experiment_dao.py
+|   |   |-- block_dao.py
+|   |   |-- gouge_dao.py
+|   |   |-- sensor_dao.py
+|   |-- /models
+|   |-- /services
+|   |-- /api
+|   |   |-- /routes
+|   |   |   |-- experiment_routes.py
+|   |   |-- app.py
+|   |-- /scripts
+|   |   |-- seed_database.py
+|-- /tests
+|   |-- test_experiment_dao.py
+|-- Dockerfile
+|-- docker-compose.yml
+|-- requirements.txt
+|-- README.md
+
