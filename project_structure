@@ -1,23 +1,121 @@
-/EPS_database
+/Rock Mechanics Lab Database
 |-- /src
 |   |-- /daos
+|   |   |-- __init__.py
 |   |   |-- base_dao.py
+|   |   |-- machine_dao.py
 |   |   |-- experiment_dao.py
 |   |   |-- block_dao.py
 |   |   |-- gouge_dao.py
 |   |   |-- sensor_dao.py
 |   |-- /models
+|   |   |-- __init__.py
+|   |   |-- machine.py
+|   |   |-- experiment.py
+|   |   |-- block.py
+|   |   |-- gouge.py
+|   |   |-- sensor.py
 |   |-- /services
+|   |   |-- __init__.py
+|   |   |-- machine_service.py
+|   |   |-- experiment_service.py
+|   |   |-- block_service.py
+|   |   |-- gouge_service.py
+|   |   |-- sensor_service.py
 |   |-- /api
-|   |   |-- /routes
-|   |   |   |-- experiment_routes.py
+|   |   |-- /routers
+|   |   |   |-- __init__.py
+|   |   |   |-- blocks.py
+|   |   |   |-- experiments.py
+|   |   |   |-- machines.py
+|   |   |   |-- gouges.py
+|   |   |   |-- sensors.py
 |   |   |-- app.py
 |   |-- /scripts
 |   |   |-- seed_database.py
 |-- /tests
+|   |-- __init__.py
 |   |-- test_experiment_dao.py
+|   |-- test_block_dao.py
+|   |-- test_machine_dao.py
+|   |-- test_gouge_dao.py
+|   |-- test_sensor_dao.py
+|   |-- test_block_service.py
+|   |-- test_block_api.py
 |-- Dockerfile
 |-- docker-compose.yml
 |-- requirements.txt
 |-- README.md
 
+
+
+Explanation
+/src/daos
+
+    base_dao.py: Contains the BaseDao class with common database operations.
+    machine_dao.py: Handles database operations related to machines.
+    experiment_dao.py: Handles database operations related to experiments.
+    block_dao.py: Handles database operations related to blocks.
+    gouge_dao.py: Handles database operations related to gouges.
+    sensor_dao.py: Handles database operations related to sensors.
+
+/src/models
+
+    init.py: Marks the directory as a Python package.
+    machine.py: Defines the Machine model using mongoengine.
+    experiment.py: Defines the Experiment model using mongoengine.
+    block.py: Defines the Block model using mongoengine.
+    gouge.py: Defines the Gouge model using mongoengine.
+    sensor.py: Defines the Sensor model using mongoengine.
+
+/src/services
+
+    init.py: Marks the directory as a Python package.
+    machine_service.py: Contains the business logic related to machines.
+    experiment_service.py: Contains the business logic related to experiments.
+    block_service.py: Contains the business logic related to blocks.
+    gouge_service.py: Contains the business logic related to gouges.
+    sensor_service.py: Contains the business logic related to sensors.
+
+/src/api/routers
+
+    init.py: Marks the directory as a Python package.
+    blocks.py: Defines the API endpoints for blocks.
+    experiments.py: Defines the API endpoints for experiments.
+    machines.py: Defines the API endpoints for machines.
+    gouges.py: Defines the API endpoints for gouges.
+    sensors.py: Defines the API endpoints for sensors.
+
+/src/api
+
+    app.py: The main FastAPI application, including routers and middleware setup.
+
+/src/scripts
+
+    seed_database.py: Script to seed the database with initial data.
+
+/tests
+
+    init.py: Marks the directory as a Python package.
+    test_experiment_dao.py: Unit tests for ExperimentDao.
+    test_block_dao.py: Unit tests for BlockDao.
+    test_machine_dao.py: Unit tests for MachineDao.
+    test_gouge_dao.py: Unit tests for GougeDao.
+    test_sensor_dao.py: Unit tests for SensorDao.
+    test_block_service.py: Unit tests for the block-related services in block_service.py.
+    test_block_api.py: Integration tests for the block-related API endpoints in blocks.py.
+Root Directory
+
+    Dockerfile: Dockerfile to containerize the application.
+    docker-compose.yml: Docker Compose file to set up the multi-container application.
+    requirements.txt: List of Python dependencies.
+    README.md: Project documentation.
+
+Summary
+
+    DAOs handle direct database interactions.
+    Models define the schema for the data using mongoengine.
+    Services contain business logic and interact with DAOs.
+    API routers define the endpoints for the FastAPI application.
+    Scripts handle tasks like seeding the database.
+    Tests ensure the functionality of your code through unit tests.
