@@ -23,7 +23,7 @@ def seed_database():
     seed_blocks()
     seed_experiments()
 
-
+    print("Seeding database: done")
 
 def seed_machines():
     pass

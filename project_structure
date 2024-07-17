@@ -1,121 +1,118 @@
 /Rock Mechanics Lab Database
-|-- /src
-|   |-- /daos
-|   |   |-- __init__.py
-|   |   |-- base_dao.py
-|   |   |-- machine_dao.py
-|   |   |-- experiment_dao.py
-|   |   |-- block_dao.py
-|   |   |-- gouge_dao.py
-|   |   |-- sensor_dao.py
-|   |-- /models
-|   |   |-- __init__.py
-|   |   |-- machine.py
-|   |   |-- experiment.py
-|   |   |-- block.py
-|   |   |-- gouge.py
-|   |   |-- sensor.py
-|   |-- /services
-|   |   |-- __init__.py
-|   |   |-- machine_service.py
-|   |   |-- experiment_service.py
-|   |   |-- block_service.py
-|   |   |-- gouge_service.py
-|   |   |-- sensor_service.py
-|   |-- /api
-|   |   |-- /routers
-|   |   |   |-- __init__.py
-|   |   |   |-- blocks.py
-|   |   |   |-- experiments.py
-|   |   |   |-- machines.py
-|   |   |   |-- gouges.py
-|   |   |   |-- sensors.py
-|   |   |-- app.py
-|   |-- /scripts
-|   |   |-- seed_database.py
-|-- /tests
-|   |-- __init__.py
-|   |-- test_experiment_dao.py
-|   |-- test_block_dao.py
-|   |-- test_machine_dao.py
-|   |-- test_gouge_dao.py
-|   |-- test_sensor_dao.py
-|   |-- test_block_service.py
-|   |-- test_block_api.py
-|-- Dockerfile
-|-- docker-compose.yml
-|-- requirements.txt
-|-- README.md
+├── build
+│   ├── bdist.linux-x86_64
+│   └── lib
+│       ├── api
+│       │   ├── __init__.py
+│       │   └── routers
+│       │       ├── blocks.py
+│       │       ├── experiments.py
+│       │       └── __init__.py
+│       ├── daos
+│       │   ├── base_dao.py
+│       │   ├── block_dao.py
+│       │   ├── core_sample_dao.py
+│       │   ├── Dao.py
+│       │   ├── experiment_dao.py
+│       │   ├── gouge_dao.py
+│       │   ├── __init__.py
+│       │   ├── machine_dao.py
+│       │   └── sensor_dao.py
+│       ├── models
+│       │   ├── block_model.py
+│       │   ├── experiment_model.py
+│       │   ├── gouge_model.py
+│       │   ├── __init__.py
+│       │   └── sensor_model.py
+│       ├── services
+│       │   ├── block_service.py
+│       │   ├── experiment_service.py
+│       │   └── __init__.py
+│       └── utils
+│           ├── __init__.py
+│           └── mongo_utils.py
+├── LICENSE
+├── main.py
+├── project_structure
+├── __pycache__
+│   └── main.cpython-310.pyc
+├── reduction_144.ipynb
+├── requirements.txt
+├── scripts
+│   ├── plot_from_query.py
+│   └── seed_database.py
+├── setup.py
+├── src
+│   ├── api
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── __init__.cpython-310.pyc
+│   │   └── routers
+│   │       ├── blocks.py
+│   │       ├── experiments.py
+│   │       ├── __init__.py
+│   │       └── __pycache__
+│   │           ├── blocks.cpython-310.pyc
+│   │           ├── experiments.cpython-310.pyc
+│   │           └── __init__.cpython-310.pyc
+│   ├── daos
+│   │   ├── base_dao.py
+│   │   ├── block_dao.py
+│   │   ├── core_sample_dao.py
+│   │   ├── experiment_dao.py
+│   │   ├── gouge_dao.py
+│   │   ├── __init__.py
+│   │   ├── machine_dao.py
+│   │   ├── __pycache__
+│   │   │   ├── base_dao.cpython-310.pyc
+│   │   │   ├── block_dao.cpython-310.pyc
+│   │   │   ├── core_sample_dao.cpython-310.pyc
+│   │   │   ├── experiment_dao.cpython-310.pyc
+│   │   │   ├── gouge_dao.cpython-310.pyc
+│   │   │   ├── __init__.cpython-310.pyc
+│   │   │   └── sensor_dao.cpython-310.pyc
+│   │   └── sensor_dao.py
+│   ├── models
+│   │   ├── block_model.py
+│   │   ├── experiment_model.py
+│   │   ├── gouge_model.py
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   └── models.cpython-310.pyc
+│   │   └── sensor_model.py
+│   ├── __pycache__
+│   │   └── main.cpython-310.pyc
+│   ├── Rock_Mechanics_Lab_Database.egg-info
+│   │   ├── dependency_links.txt
+│   │   ├── PKG-INFO
+│   │   ├── SOURCES.txt
+│   │   └── top_level.txt
+│   ├── services
+│   │   ├── block_service.py
+│   │   ├── experiment_service.py
+│   │   ├── __init__.py
+│   │   └── __pycache__
+│   │       ├── experiment_service.cpython-310.pyc
+│   │       └── __init__.cpython-310.pyc
+│   └── utils
+│       ├── __init__.py
+│       └── mongo_utils.py
+├── static
+│   ├── css
+│   │   └── styles.css
+│   ├── index.html
+│   └── js
+│       └── experiment.js
+└── tests
+    ├── __init__.py
+    ├── __pycache__
+    │   ├── __init__.cpython-310.pyc
+    │   ├── test_block_api.cpython-310-pytest-8.2.2.pyc
+    │   └── test_block_service.cpython-310-pytest-8.2.2.pyc
+    ├── test_block_api.py
+    ├── test_block_service.py
+    └── test_data
+        ├── s0074sa03min50.tdms
+        └── s0108sw06car102030.tdms
 
-
-
-Explanation
-/src/daos
-
-    base_dao.py: Contains the BaseDao class with common database operations.
-    machine_dao.py: Handles database operations related to machines.
-    experiment_dao.py: Handles database operations related to experiments.
-    block_dao.py: Handles database operations related to blocks.
-    gouge_dao.py: Handles database operations related to gouges.
-    sensor_dao.py: Handles database operations related to sensors.
-
-/src/models
-
-    init.py: Marks the directory as a Python package.
-    machine.py: Defines the Machine model using mongoengine.
-    experiment.py: Defines the Experiment model using mongoengine.
-    block.py: Defines the Block model using mongoengine.
-    gouge.py: Defines the Gouge model using mongoengine.
-    sensor.py: Defines the Sensor model using mongoengine.
-
-/src/services
-
-    init.py: Marks the directory as a Python package.
-    machine_service.py: Contains the business logic related to machines.
-    experiment_service.py: Contains the business logic related to experiments.
-    block_service.py: Contains the business logic related to blocks.
-    gouge_service.py: Contains the business logic related to gouges.
-    sensor_service.py: Contains the business logic related to sensors.
-
-/src/api/routers
-
-    init.py: Marks the directory as a Python package.
-    blocks.py: Defines the API endpoints for blocks.
-    experiments.py: Defines the API endpoints for experiments.
-    machines.py: Defines the API endpoints for machines.
-    gouges.py: Defines the API endpoints for gouges.
-    sensors.py: Defines the API endpoints for sensors.
-
-/src/api
-
-    app.py: The main FastAPI application, including routers and middleware setup.
-
-/src/scripts
-
-    seed_database.py: Script to seed the database with initial data.
-
-/tests
-
-    init.py: Marks the directory as a Python package.
-    test_experiment_dao.py: Unit tests for ExperimentDao.
-    test_block_dao.py: Unit tests for BlockDao.
-    test_machine_dao.py: Unit tests for MachineDao.
-    test_gouge_dao.py: Unit tests for GougeDao.
-    test_sensor_dao.py: Unit tests for SensorDao.
-    test_block_service.py: Unit tests for the block-related services in block_service.py.
-    test_block_api.py: Integration tests for the block-related API endpoints in blocks.py.
-Root Directory
-
-    Dockerfile: Dockerfile to containerize the application.
-    docker-compose.yml: Docker Compose file to set up the multi-container application.
-    requirements.txt: List of Python dependencies.
-    README.md: Project documentation.
-
-Summary
-
-    DAOs handle direct database interactions.
-    Models define the schema for the data using mongoengine.
-    Services contain business logic and interact with DAOs.
-    API routers define the endpoints for the FastAPI application.
-    Scripts handle tasks like seeding the database.
-    Tests ensure the functionality of your code through unit tests.
+31 directories, 84 files

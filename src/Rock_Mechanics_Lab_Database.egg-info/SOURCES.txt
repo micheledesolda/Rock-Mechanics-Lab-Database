@@ -8,7 +8,6 @@ src/api/__init__.py
 src/api/routers/__init__.py
 src/api/routers/blocks.py
 src/api/routers/experiments.py
-src/daos/Dao.py
 src/daos/__init__.py
 src/daos/base_dao.py
 src/daos/block_dao.py
@@ -17,6 +16,7 @@ src/daos/experiment_dao.py
 src/daos/gouge_dao.py
 src/daos/machine_dao.py
 src/daos/sensor_dao.py
+src/daos/some_function_useless_so_far.py
 src/models/__init__.py
 src/models/block_model.py
 src/models/experiment_model.py

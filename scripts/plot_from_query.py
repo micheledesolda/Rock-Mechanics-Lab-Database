@@ -25,4 +25,4 @@ plt.ylabel(y_field)
 plt.title(f'Plot of {x_field} vs {y_field}')
 plt.show()
 
-print("Database created and data added successfully.")
+print("Query to database and plot work.")
