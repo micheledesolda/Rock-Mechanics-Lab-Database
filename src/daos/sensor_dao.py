@@ -1,13 +1,6 @@
 # src/daos/sensor_dao.py
-import pymongo
 from typing import List, Dict, Optional, Union, Tuple, Any
 import os
-import sys
-import csv
-import json
-import gridfs
-from nptdms import TdmsFile
-import matplotlib.pyplot as plt
 from daos.base_dao import BaseDao
 
 # MongoDB connection details
@@ -41,25 +34,13 @@ class SensorDao(BaseDao):
         finally:
             conn.close()
             
-    def initialize_inventory(self) -> None:
-        """Initialize the sensor inventory in the database."""
-        conn, collection = self._get_connection(self.collection_name)
 
-        try:
-            for sensor in self.available_sensors:
-                collection.update_one({"_id": sensor["_id"]}, {"$set": sensor}, upsert=True)
-            print("Sensor inventory initialized.")
-        except Exception as err:
-            print(f"Error: '{err}'")
-        finally:
-            conn.close()
-
-    def find_sensor_by_id(self, _id: str) -> Optional[Dict]:
+    def find_sensor_by_id(self, sensor_id: str) -> Optional[Dict]:
         """Retrieve sensor details by sensor ID."""
         conn, collection = self._get_connection(self.collection_name)
 
         try:
-            sensor = collection.find_one({"_id": _id})
+            sensor = collection.find_one({"_id": sensor_id})
             return sensor
         except Exception as err:
             print(f"Error: '{err}'")

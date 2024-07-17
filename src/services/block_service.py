@@ -1,5 +1,6 @@
 # src/services/block_service.py
 from daos.block_dao import BlockDao
+from typing import Dict
 
 class BlockService:
     def __init__(self):

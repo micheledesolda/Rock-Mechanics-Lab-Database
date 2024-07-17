@@ -34,4 +34,3 @@ def get_block(block_id: str):
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-# You can add more endpoints as needed

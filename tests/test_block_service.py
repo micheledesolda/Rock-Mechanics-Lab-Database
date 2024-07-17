@@ -1,19 +1,18 @@
 # tests/test_block_service.py
+
 import pytest
-from services.block_service import BlockService
 from mongoengine import connect, disconnect
+import mongomock
+from services.block_service import BlockService
 
 @pytest.fixture(scope='module')
 def mongo():
-    connect('mongoenginetest', host='mongomock://localhost')
-    yield
+    connection = connect('mongoenginetest', host='mongodb://localhost', mongo_client_class=mongomock.MongoClient)
+    yield connection
     disconnect()
 
-@pytest.fixture
-def block_service(mongo):
-    return BlockService()
-
-def test_create_block(block_service):
+def test_create_block_service(mongo):
+    block_service = BlockService()
     block_data = {
         "block_id": "block1",
         "material": "steel",
@@ -22,4 +21,6 @@ def test_create_block(block_service):
         "sensors": []
     }
     result = block_service.create_block(block_data)
-    assert result is None  # create() method doesn't return anything
+    assert result == {"message": "Block created successfully"}
+
+# Add more tests as needed

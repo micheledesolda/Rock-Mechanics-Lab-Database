@@ -2,15 +2,17 @@
 
 import pytest
 from fastapi.testclient import TestClient
+from mongoengine import connect, disconnect, get_connection
+import mongomock
+
 from main import app
-from mongoengine import connect, disconnect
 
 client = TestClient(app)
 
 @pytest.fixture(scope='module')
 def mongo():
-    connect('mongoenginetest', host='mongomock://localhost')
-    yield
+    connection = connect('mongoenginetest', host='mongodb://localhost', mongo_client_class=mongomock.MongoClient)
+    yield connection
     disconnect()
 
 def test_create_block(mongo):
