@@ -102,6 +102,12 @@ def seed_experiments():
     # Measurement Data can be added after the experiment creation
     # NB: adding centralized measurements will overwrite the previous one!!!
     experimentDao.add_centralized_measurements_from_tdms_file(experiment_id=experiment_id,file_path=experiment_path)
+    # here as additional_measurements we add ultrasonic waveforms
+    file_name = "001_run_in_10MPa.bscan.tsv"
+    file_path = os.path.join(test_dir,file_name)
+    # with open(file_path, mode="rb") as infile:
+    #     experimentDao.fs.put(infile)
+    experimentDao.add_utrasonic_waveforms_from_tsv_file(file_path=file_path, experiment_id=experiment_id)
 
     # The file can be created directly from the tdms file. In this case, the file name will be the experiment_id (without extension)
     file_name = "s0074sa03min50.tdms"

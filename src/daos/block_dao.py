@@ -80,7 +80,7 @@ class BlockDao(BaseDao):
         conn, collection = self._get_connection(self.collection_name)
         try:
             block = collection.find_one({"_id": block_id})
-            s = f"block {block_id} found\n"
+            s = f"block {block_id} found"
             print(s)
             return block
         except Exception as err:

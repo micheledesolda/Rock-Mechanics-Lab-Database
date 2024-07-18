@@ -1,5 +1,7 @@
-from typing import List, Dict, Optional, Union
+from typing import List, Dict, Tuple, Optional, Union
 import os
+import sys
+import csv
 import json
 import gridfs
 from nptdms import TdmsFile
@@ -8,8 +10,8 @@ from daos.block_dao import BlockDao
 from daos.gouge_dao import GougeDao
 
 # Constants
-MAXIMUM_SIZE = 16000000
-CHUNK_SIZE = int(MAXIMUM_SIZE / 64)
+MAXIMUM_DOCUMENT_SIZE = 16000000        # 16 MB, as for mongodb documentation
+CHUNK_SIZE = int(MAXIMUM_DOCUMENT_SIZE/8)
 experiments_collection_name = os.getenv("COLLECTION_EXPERIMENTS") or "Experiments"
 
 class ExperimentDao(BaseDao):
@@ -221,6 +223,21 @@ class ExperimentDao(BaseDao):
         finally:
             conn.close()
 
+    def add_utrasonic_waveforms_from_tsv_file(self, experiment_id: str, file_path: str) -> Dict:
+        """Store large ultrasonic waveform measurement data in GridFS and update the experiment document."""
+        conn, _ = self._get_connection(self.collection_name)
+
+        try:
+            tsv_dict = self._read_ultrasonic_waveforms_from_tsv_file(file_path=file_path)
+            self._add_ultrasonic_waveforms_from_tsv_dictionary(experiment_id=experiment_id, tsv_dict=tsv_dict)
+            print(f"Added Ultrasonic Waveform measurements from tsv file {file_path} to experiment {experiment_id}")
+            return tsv_dict
+        except Exception as err:
+            print(f"Failed to add Ultrasonic Waveform measurements from tsv file {file_path} to experiment {experiment_id}:\nError: '{err}'")
+            return {}
+        finally:
+            conn.close()
+
 ### Update: helper methods
     def _add_centralized_measurements_from_tdms_dictionary(self, experiment_id: str, tdms_dict: Dict) -> Dict:
         """Extract and store centralized measurements from a TDMS dictionary in GridFS and update the experiment document."""
@@ -231,10 +248,11 @@ class ExperimentDao(BaseDao):
                 for channel_name, channel_data in group_data['channels'].items():
                     data = channel_data['data']
                     properties = channel_data['properties']
+                    data_size = sys.getsizeof(data)
 
-                    if len(data) > CHUNK_SIZE:
+                    if data_size > CHUNK_SIZE:
                         key = f"{group_name}/{channel_name}/data"
-                        file_ids = self._store_measurement_chunks(experiment_id, key=key, values=data, chunk_size=CHUNK_SIZE)
+                        file_ids = self._store_centralized_measurement_chunks(experiment_id, key=key, values=data, chunk_size=CHUNK_SIZE)
                         data_chunk.setdefault(group_name, {})[channel_name] = {
                             "properties": properties,
                             "data": file_ids
@@ -278,6 +296,74 @@ class ExperimentDao(BaseDao):
             print(f"Error reading file {file_path}:\nError: '{err}'")
             return {}
 
+    def _add_ultrasonic_waveforms_from_tsv_dictionary(self, experiment_id: str, tsv_dict: Dict) -> Dict:
+            """Extract and store ultrasonic waveform data from a TSV dictionary in GridFS and update the experiment document."""
+            conn, _ = self._get_connection(self.collection_name)
+            try:
+                metadata = tsv_dict.get("metadata", {})
+                data = tsv_dict.get("data", [])
+                data_chunks = {}
+                
+                total_data_size = 0
+                for uw in data:
+                    total_data_size += sys.getsizeof(uw)   # getsizeof only read the first level of data structure, that is a list of lists
+                print(f"Total data size: {total_data_size}")
+
+                if total_data_size > CHUNK_SIZE:
+                    chunk_key = "ultrasonic_waveforms/uw_numbers"
+                    file_ids = self._store_uw_measurement_chunks(experiment_id, key=chunk_key, values=data, chunk_size=CHUNK_SIZE)
+                    data_chunks = file_ids
+                else:
+                    data_chunks = data
+
+                update_fields = {
+                    "additional_measurements": {
+                        "ultrasonic_waveforms": {
+                            "metadata": metadata,
+                            "data": data_chunks
+                        }
+                    }
+                }
+
+                update_result = self.update(experiment_id=experiment_id, update_fields=update_fields)
+                print(f"Update result: {update_result}")
+                return update_result
+            except Exception as err:
+                print(f"Failed to add Ultrasonic Waveform measurements to experiment {experiment_id}:\nError: '{err}'")
+                return {}
+            finally:
+                conn.close()
+
+
+    def _read_ultrasonic_waveforms_from_tsv_file(self, file_path: str, encoding: str = 'iso8859') -> Dict[str, List[float]]:
+        """Read and parse the measurement file into time series format."""
+        try:
+            with open(file=file_path, encoding=encoding) as csvfile:
+                csvreader = csv.reader(csvfile, delimiter="\t")
+
+                general = next(csvfile).strip("\n").split("|")[0]
+                amplitude_scale = next(csvfile).strip("\n").replace(" ","").split("|")[1:]
+                time_scale = next(csvfile).strip("\n").replace(" ","").split("|")[1:]
+                acquisition_scale = next(csvfile).strip("\n").replace(" ","").split("|")[1:]
+
+                metadata = {
+                    "general_info" : general,
+                    "amplitude_scale" : amplitude_scale,
+                    "time_scale" : time_scale,
+                    "acquisition_scale" : acquisition_scale,
+                }
+                data = []                         # it is going to be a list of lists
+                for row in csvreader:  # each row is a uw measurement
+                    try:                        
+                        data.append( list(map(int, row)))
+                    except:                 # this is a clean way to remove the empty lines from that damned tsv file
+                        pass
+                return {"metadata": metadata, "data": data}
+            
+        except Exception as err:
+            print(f"Error reading file: '{err}'")
+            return {}
+
 ### DELETE
 ### Delete: exposed methods
     def delete(self, experiment_id: str) -> str:
@@ -292,11 +378,7 @@ class ExperimentDao(BaseDao):
             conn.close()
 
 ### Utils
-    def _split_list(self, data: List[float], chunk_size: int) -> List[List[float]]:
-        """Split a large list of floats into chunks of specified size."""
-        return [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
-
-    def _store_measurement_chunks(self, experiment_id: str, key: str, values: List, chunk_size: int) -> List[str]:
+    def _store_centralized_measurement_chunks(self, experiment_id: str, key: str, values: List, chunk_size: int) -> List[str]:
         """Store chunks of measurement data in GridFS and return the file IDs."""
         chunks = self._split_list(values, chunk_size)
         file_ids = []
@@ -305,3 +387,106 @@ class ExperimentDao(BaseDao):
             self.fs.put(json.dumps(chunk).encode('utf-8'), _id=file_id, experiment_id=experiment_id, key=key)
             file_ids.append(file_id)
         return file_ids
+    
+    def _split_list(self, data: List[float], chunk_size: int) -> List[List[float]]:
+        """Split a large list of floats into chunks of specified size."""
+        return [data[i:i + chunk_size] for i in range(0, len(data), chunk_size)]
+
+    def _store_uw_measurement_chunks(self, experiment_id: str, key: str, values: List[List[float]], chunk_size: int) -> List[str]:
+        """Store chunks of measurement data in GridFS and return the file IDs."""
+        chunks = self._split_list_into_chunks(values, chunk_size)
+        file_ids = []
+        for index, chunk in enumerate(chunks):
+            uw__number_start = index*len(chunk)
+            uw__number_end = uw__number_start + len(chunk)
+            chunk_range = f"{uw__number_start}-{uw__number_end}"  # the chunk _id contain the information of which uw it contains
+            file_id = f"{experiment_id}_{key}_{chunk_range}"
+            self.fs.put(json.dumps(chunk).encode('utf-8'), _id=file_id, experiment_id=experiment_id, key=key, range=chunk_range)
+            file_ids.append(file_id)
+        return file_ids
+    
+    def _split_list_into_chunks(self, data: List[List[float]], chunk_size: int) -> List[List[List[float]]]:
+            """Split a large list of lists into chunks of specified size without splitting individual lists."""
+            chunks = []
+            current_chunk = []
+            current_size = 0
+
+            for row in data:
+                row_size = sys.getsizeof(row)
+                if current_size + row_size > chunk_size and current_chunk:
+                    chunks.append(current_chunk)
+                    current_chunk = []
+                    current_size = 0
+
+                current_chunk.append(row)
+                current_size += row_size
+
+            if current_chunk:
+                chunks.append(current_chunk)
+
+            return chunks
+    
+
+    def find_additional_measurements(self, experiment_id: str, measurement_type: str, start_uw: int, end_uw: int) -> Dict:
+        """Retrieve additional measurements and properties for a specific experiment and range of uw_numbers."""
+        measurement = self._get_additional_measurement_properties(experiment_id, measurement_type)
+        if not measurement:
+            return {}
+
+        properties = measurement.get("metadata", {})
+        data = self._get_additional_measurement_data(measurement, start_uw, end_uw)
+
+        return {"properties": properties, "data": data}
+
+    ### Read: helper methods
+    def _get_additional_measurement_data(self, measurement: Dict, start_uw: int, end_uw: int) -> List:
+        """Retrieve data from measurement, either from GridFS or directly."""
+        data = []
+        try:
+            # Data is stored in chunks with IDs containing range information
+            file_ids = measurement.get("data", [])
+            for file_id in file_ids:
+                chunk_range = self._parse_chunk_range(file_id)
+                if self._is_range_overlapping(chunk_range, (start_uw, end_uw)):
+                    chunk = json.loads(self.fs.get(file_id).read())
+                    data.extend(self._extract_data_within_range(chunk, start_uw, end_uw))
+        except Exception as err:
+            print(f"Error retrieving additional measurement data:\nError: '{err}'")
+        return data
+
+    def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str) -> Dict:
+        """Retrieve properties of the specified additional measurement."""
+        conn, collection = self._get_connection(self.collection_name)
+        try:
+            measurement = collection.find_one(
+                {"_id": experiment_id},
+                {f"additional_measurements.{measurement_type}": 1, "_id": 0}
+            )["additional_measurements"][measurement_type]
+            return measurement
+        except Exception as err:
+            print(f"Error retrieving additional measurement properties:\nError: '{err}'")
+            return {}
+        finally:
+            conn.close()
+
+    def _parse_chunk_range(self, file_id: str) -> Tuple[int, int]:
+        """Parse the range of uw_numbers from the file_id."""
+        try:
+            range_part = file_id.split("_")[-1]
+            start_uw, end_uw = map(int, range_part.split("-"))
+            return (start_uw, end_uw)
+        except Exception as err:
+            print(f"Error parsing chunk range from file_id '{file_id}':\nError: '{err}'")
+            return (float('inf'), float('-inf'))
+
+    def _is_range_overlapping(self, chunk_range: Tuple[int, int], target_range: Tuple[int, int]) -> bool:
+        """Check if the chunk range overlaps with the target range."""
+        chunk_start, chunk_end = chunk_range
+        target_start, target_end = target_range
+        return not (chunk_end < target_start or chunk_start > target_end)
+
+    def _extract_data_within_range(self, chunk: List[List[float]], start_uw: int, end_uw: int) -> List[List[float]]:
+        """Extract data within the specified range from the chunk."""
+        return [row for row in chunk if start_uw <= row[0] <= end_uw]
+
+
