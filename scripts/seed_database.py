@@ -9,11 +9,6 @@ from utils.mongo_utils import is_mongodb_running, start_mongodb
 
 
 def seed_database():
-    if not is_mongodb_running():
-        print("MongoDB is not running. Starting MongoDB...")
-        start_mongodb()
-    else:
-        print("MongoDB is running.")
 
     print("Seeding database...")
     # seed_machines()
@@ -86,8 +81,6 @@ def seed_experiments():
     experiment_name = file_name.split(".")[0]
     experiment_path = os.path.join(test_dir,file_name)
 
-    print(experiment_path)
-
     experiment_id = experimentDao.create_experiment(experiment_id=experiment_name, 
                                                     experiment_type="double direct shear", 
                                                     blocks=[{"block_id":"paglialberi_1","position":"left"}], 
@@ -105,8 +98,6 @@ def seed_experiments():
     # here as additional_measurements we add ultrasonic waveforms
     file_name = "001_run_in_10MPa.bscan.tsv"
     file_path = os.path.join(test_dir,file_name)
-    # with open(file_path, mode="rb") as infile:
-    #     experimentDao.fs.put(infile)
     experimentDao.add_utrasonic_waveforms_from_tsv_file(file_path=file_path, experiment_id=experiment_id)
 
     # The file can be created directly from the tdms file. In this case, the file name will be the experiment_id (without extension)
@@ -116,7 +107,6 @@ def seed_experiments():
     experimentDao.add_gouge(experiment_id=experiment_id,gouge_id="minusil",thickness_mm=0.3)
     experimentDao.add_block(experiment_id=experiment_id, block_id="paglialberi_1",position="right")
     experimentDao.add_block(experiment_id=experiment_id, block_id="mem_1",position="left")
-
 
 ## Actua code to seed the database
 

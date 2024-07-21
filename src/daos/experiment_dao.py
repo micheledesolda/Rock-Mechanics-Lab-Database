@@ -12,6 +12,7 @@ from daos.gouge_dao import GougeDao
 # Constants
 MAXIMUM_DOCUMENT_SIZE = 16000000        # 16 MB, as for mongodb documentation
 CHUNK_SIZE = int(MAXIMUM_DOCUMENT_SIZE/8)
+MAXIMUM_DIRECT_ENTRY_SIZE = 20000       # 20 KB. Anything above is stored in chunks at most equal CHUNK_SIZE
 experiments_collection_name = os.getenv("COLLECTION_EXPERIMENTS") or "Experiments"
 
 class ExperimentDao(BaseDao):
@@ -132,9 +133,9 @@ class ExperimentDao(BaseDao):
         
         return {"properties": properties, "data": data}
 
-    def find_additional_measurements(self, experiment_id: str, measurement_type: str, start_uw: int, end_uw: int) -> Dict:
+    def find_additional_measurements(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str, start_uw: int, end_uw: int) -> Dict:
         """Retrieve additional measurements and properties for a specific experiment and range of uw_numbers."""
-        measurement = self._get_additional_measurement_properties(experiment_id, measurement_type)
+        measurement = self._get_additional_measurement_properties(experiment_id, measurement_type, measurement_sequence_id)
         if not measurement:
             return {}
 
@@ -172,6 +173,21 @@ class ExperimentDao(BaseDao):
         finally:
             conn.close()
 
+    def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str)  -> Dict:
+        """Retrieve properties of the specified additional measurement."""
+        conn, collection = self._get_connection(self.collection_name)
+        try:
+            measurement = collection.find_one(
+                {"_id": experiment_id},
+                {f"additional_measurements.{measurement_type}.{measurement_sequence_id}": 1, "_id": 0}
+            )["additional_measurements"][measurement_type][measurement_sequence_id]
+            return measurement
+        except Exception as err:
+            print(f"Error retrieving additional measurement properties:\nError: '{err}'")
+            return {}
+        finally:
+            conn.close()
+
     def _get_additional_measurement_data(self, measurement: Dict, start_uw: int, end_uw: int) -> List:
             """Retrieve data from measurement, either from GridFS or directly."""
             data = []
@@ -186,21 +202,6 @@ class ExperimentDao(BaseDao):
             except Exception as err:
                 print(f"Error retrieving additional measurement data:\nError: '{err}'")
             return data
-
-    def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str) -> Dict:
-        """Retrieve properties of the specified additional measurement."""
-        conn, collection = self._get_connection(self.collection_name)
-        try:
-            measurement = collection.find_one(
-                {"_id": experiment_id},
-                {f"additional_measurements.{measurement_type}": 1, "_id": 0}
-            )["additional_measurements"][measurement_type]
-            return measurement
-        except Exception as err:
-            print(f"Error retrieving additional measurement properties:\nError: '{err}'")
-            return {}
-        finally:
-            conn.close()
             
 ### UPDATE
 # Update: exposed methods
@@ -217,6 +218,7 @@ class ExperimentDao(BaseDao):
 
     def add_block(self, experiment_id: str, block_id: str, position: str) -> str:
         """Add a block to an experiment."""
+        conn, collection = self._get_connection(self.collection_name) 
         blockDao = BlockDao()
         block = blockDao.find_block_by_id(block_id)
         if not block:
@@ -224,8 +226,8 @@ class ExperimentDao(BaseDao):
 
         block_entry = {"_id": block_id, "position": position}
         try:
-            update_result = self.update(
-                experiment_id,
+            update_result = collection.update_one(
+                {"_id": experiment_id},
                 {"$push": {"blocks": block_entry}}
             )
             return f"Block {block_id} added to experiment {experiment_id} at position {position}." if "updated successfully" in update_result else f"Failed to add block {block_id} to experiment {experiment_id}."
@@ -234,6 +236,7 @@ class ExperimentDao(BaseDao):
 
     def add_gouge(self, experiment_id: str, gouge_id: str, thickness_mm: str) -> str:
         """Add a gouge to an experiment."""
+        conn, collection = self._get_connection(self.collection_name) 
         gougeDao = GougeDao()
         gouge = gougeDao.find_gouge_by_id(gouge_id)
         if not gouge:
@@ -241,8 +244,8 @@ class ExperimentDao(BaseDao):
 
         gouge_entry = {"_id": gouge_id, "thickness_mm": thickness_mm}
         try:
-            update_result = self.update(
-                experiment_id,
+            update_result = collection.update_one(
+                {"_id": experiment_id},
                 {"$push": {"gouges": gouge_entry}}
             )
             return f"Gouge {gouge_id} added to experiment {experiment_id}." if "updated successfully" in update_result else f"Failed to add gouge {gouge_id} to experiment {experiment_id}."
@@ -255,9 +258,15 @@ class ExperimentDao(BaseDao):
 
         try:
             tdms_dict = self._read_experiment_tdms_file(file_path=file_path)
-            self._add_centralized_measurements_from_tdms_dictionary(experiment_id=experiment_id, tdms_dict=tdms_dict)
-            print(f"Added measurements from tdms file {file_path} to experiment {experiment_id}")
-            return tdms_dict
+            file_name = os.path.basename(file_path).split(".")[0]
+            if file_name == experiment_id:
+                self.update(experiment_id=experiment_id, update_fields = tdms_dict["properties"])
+                self._add_centralized_measurements_from_tdms_dictionary(experiment_id=experiment_id, tdms_dict=tdms_dict)
+                print(f"Added measurements from tdms file {file_path} to experiment {experiment_id}")
+                return tdms_dict
+            else:
+                return print(f"Tryng to add to Experiment: {experiment_id}\nmeasurements from another experiment: {file_name}\nProcess aborted")
+
         except Exception as err:
             print(f"Failed to add measurements from tdms file {file_path} to experiment {experiment_id}:\nError: '{err}'")
             return {}
@@ -291,7 +300,7 @@ class ExperimentDao(BaseDao):
                     properties = channel_data['properties']
                     data_size = sys.getsizeof(data)
 
-                    if data_size > CHUNK_SIZE:
+                    if data_size > MAXIMUM_DIRECT_ENTRY_SIZE:
                         key = f"{group_name}/{channel_name}/data"
                         file_ids = self._store_centralized_measurement_chunks(experiment_id, key=key, values=data, chunk_size=CHUNK_SIZE)
                         data_chunk.setdefault(group_name, {})[channel_name] = {
@@ -341,6 +350,7 @@ class ExperimentDao(BaseDao):
             """Extract and store ultrasonic waveform data from a TSV dictionary in GridFS and update the experiment document."""
             conn, _ = self._get_connection(self.collection_name)
             try:
+                file_name = tsv_dict.get("file name",{})
                 metadata = tsv_dict.get("metadata", {})
                 data = tsv_dict.get("data", [])
                 data_chunks = {}
@@ -351,7 +361,7 @@ class ExperimentDao(BaseDao):
                 print(f"Total data size: {total_data_size}")
 
                 if total_data_size > CHUNK_SIZE:
-                    chunk_key = "ultrasonic_waveforms/uw_numbers"
+                    chunk_key = f"ultrasonic_waveforms/{file_name}/uw_numbers"
                     file_ids = self._store_uw_measurement_chunks(experiment_id, key=chunk_key, values=data, chunk_size=CHUNK_SIZE)
                     data_chunks = file_ids
                 else:
@@ -359,9 +369,11 @@ class ExperimentDao(BaseDao):
 
                 update_fields = {
                     "additional_measurements": {
-                        "ultrasonic_waveforms": {
-                            "metadata": metadata,
-                            "data": data_chunks
+                            "ultrasonic_waveforms": { 
+                                file_name : {
+                                    "metadata": metadata,
+                                    "data": data_chunks
+                            }
                         }
                     }
                 }
@@ -380,6 +392,7 @@ class ExperimentDao(BaseDao):
         """Read and parse the measurement file into time series format."""
         try:
             with open(file=file_path, encoding=encoding) as csvfile:
+                file_name = os.path.basename(file_path).split(".")[0]
                 csvreader = csv.reader(csvfile, delimiter="\t")
 
                 general = next(csvfile).strip("\n").split("|")[0]
@@ -399,7 +412,7 @@ class ExperimentDao(BaseDao):
                         data.append( list(map(int, row)))
                     except:                 # this is a clean way to remove the empty lines from that damned tsv file
                         pass
-                return {"metadata": metadata, "data": data}
+                return {"file name" : file_name, "metadata": metadata, "data": data}
             
         except Exception as err:
             print(f"Error reading file: '{err}'")

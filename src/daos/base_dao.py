@@ -3,7 +3,7 @@ import pymongo
 from pymongo.collection import Collection
 from typing import Tuple, Dict, Any, Optional
 import os
-
+from utils.mongo_utils import is_mongodb_running, start_mongodb
 
 # MongoDB connection details
 url = os.getenv("MONGO_URL") or "mongodb://localhost:27017/"
@@ -14,6 +14,11 @@ class BaseDao:
         """Initialize the BaseDao class with database connection details."""
         self.url = url
         self.db_name = db_name
+        if not is_mongodb_running():
+            print("MongoDB is not running. Starting MongoDB...")
+            start_mongodb()
+        else:
+            print("MongoDB is running.")
 
     def _get_connection(self, collection_name: str) -> Tuple[pymongo.MongoClient, pymongo.collection.Collection]:
         """Create a new connection to the MongoDB database and return the collection."""

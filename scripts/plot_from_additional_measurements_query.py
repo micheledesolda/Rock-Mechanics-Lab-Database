@@ -6,17 +6,18 @@ import matplotlib.pyplot as plt
 
 def main():
     experimentDao = ExperimentDao()
-    dirname = os.path.dirname(__file__)
-    test_dir = os.path.join(dirname, '../tests/test_data')
-    file_name = "s0108sw06car102030.tsv"
-    experiment_name = file_name.split(".")[0]
+    uw_sequence_name = "001_run_in_10MPa"
+    experiment_id = "s0108sw06car102030"
 
     # Define the range of uw_numbers you want to plot
     start_uw = 0
     end_uw = 500
 
     # Retrieve the ultrasonic waveforms data
-    uw_dict = experimentDao.find_additional_measurements(experiment_id=experiment_name, measurement_type="ultrasonic_waveforms", start_uw=start_uw, end_uw=end_uw)
+    uw_dict = experimentDao.find_additional_measurements(experiment_id=experiment_id, 
+                                                         measurement_type="ultrasonic_waveforms",
+                                                         measurement_sequence_id=uw_sequence_name, 
+                                                         start_uw=start_uw, end_uw=end_uw)
 
     if not uw_dict:
         print("No data found for the specified range.")
@@ -37,7 +38,7 @@ def main():
 
     plt.xlabel("Time (s)")
     plt.ylabel("Amplitude")
-    plt.title(f'Plot of Ultrasonic Waveforms from {start_uw} to {end_uw}')
+    plt.title(f'Ultrasonic Waveforms from {uw_sequence_name}\nWave numbers: {start_uw} to {end_uw}')
     plt.show()
 
     print("Query to database and plot work.")
