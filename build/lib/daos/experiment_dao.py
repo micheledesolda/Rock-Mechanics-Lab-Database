@@ -132,6 +132,17 @@ class ExperimentDao(BaseDao):
         
         return {"properties": properties, "data": data}
 
+    def find_additional_measurements(self, experiment_id: str, measurement_type: str, start_uw: int, end_uw: int) -> Dict:
+        """Retrieve additional measurements and properties for a specific experiment and range of uw_numbers."""
+        measurement = self._get_additional_measurement_properties(experiment_id, measurement_type)
+        if not measurement:
+            return {}
+
+        properties = measurement.get("metadata", {})
+        data = self._get_additional_measurement_data(measurement, start_uw, end_uw)
+
+        return {"properties": properties, "data": data}
+
 ### Read: helper methods
     def _get_measurement_data(self, measurement: Dict) -> List:
         """Retrieve data from measurement, either from GridFS or directly."""
@@ -161,6 +172,36 @@ class ExperimentDao(BaseDao):
         finally:
             conn.close()
 
+    def _get_additional_measurement_data(self, measurement: Dict, start_uw: int, end_uw: int) -> List:
+            """Retrieve data from measurement, either from GridFS or directly."""
+            data = []
+            try:
+                # Data is stored in chunks with IDs containing range information
+                file_ids = measurement.get("data", [])
+                for file_id in file_ids:
+                    chunk_range = self._parse_chunk_range(file_id)
+                    if self._is_range_overlapping(chunk_range, (start_uw, end_uw)):
+                        chunk = json.loads(self.fs.get(file_id).read())
+                        data.extend(self._extract_data_within_range(chunk, start_uw, end_uw))
+            except Exception as err:
+                print(f"Error retrieving additional measurement data:\nError: '{err}'")
+            return data
+
+    def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str) -> Dict:
+        """Retrieve properties of the specified additional measurement."""
+        conn, collection = self._get_connection(self.collection_name)
+        try:
+            measurement = collection.find_one(
+                {"_id": experiment_id},
+                {f"additional_measurements.{measurement_type}": 1, "_id": 0}
+            )["additional_measurements"][measurement_type]
+            return measurement
+        except Exception as err:
+            print(f"Error retrieving additional measurement properties:\nError: '{err}'")
+            return {}
+        finally:
+            conn.close()
+            
 ### UPDATE
 # Update: exposed methods
     def update(self, experiment_id: str, update_fields: Dict) -> str:
@@ -425,49 +466,6 @@ class ExperimentDao(BaseDao):
                 chunks.append(current_chunk)
 
             return chunks
-    
-
-    def find_additional_measurements(self, experiment_id: str, measurement_type: str, start_uw: int, end_uw: int) -> Dict:
-        """Retrieve additional measurements and properties for a specific experiment and range of uw_numbers."""
-        measurement = self._get_additional_measurement_properties(experiment_id, measurement_type)
-        if not measurement:
-            return {}
-
-        properties = measurement.get("metadata", {})
-        data = self._get_additional_measurement_data(measurement, start_uw, end_uw)
-
-        return {"properties": properties, "data": data}
-
-    ### Read: helper methods
-    def _get_additional_measurement_data(self, measurement: Dict, start_uw: int, end_uw: int) -> List:
-        """Retrieve data from measurement, either from GridFS or directly."""
-        data = []
-        try:
-            # Data is stored in chunks with IDs containing range information
-            file_ids = measurement.get("data", [])
-            for file_id in file_ids:
-                chunk_range = self._parse_chunk_range(file_id)
-                if self._is_range_overlapping(chunk_range, (start_uw, end_uw)):
-                    chunk = json.loads(self.fs.get(file_id).read())
-                    data.extend(self._extract_data_within_range(chunk, start_uw, end_uw))
-        except Exception as err:
-            print(f"Error retrieving additional measurement data:\nError: '{err}'")
-        return data
-
-    def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str) -> Dict:
-        """Retrieve properties of the specified additional measurement."""
-        conn, collection = self._get_connection(self.collection_name)
-        try:
-            measurement = collection.find_one(
-                {"_id": experiment_id},
-                {f"additional_measurements.{measurement_type}": 1, "_id": 0}
-            )["additional_measurements"][measurement_type]
-            return measurement
-        except Exception as err:
-            print(f"Error retrieving additional measurement properties:\nError: '{err}'")
-            return {}
-        finally:
-            conn.close()
 
     def _parse_chunk_range(self, file_id: str) -> Tuple[int, int]:
         """Parse the range of uw_numbers from the file_id."""
