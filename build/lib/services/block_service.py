@@ -1,16 +1,18 @@
 # src/services/block_service.py
+from typing import Dict, List, Any
 from daos.block_dao import BlockDao
-from typing import Dict
+from services.base_service import BaseService
 
-class BlockService:
+class BlockService(BaseService):
     def __init__(self):
-        self.block_dao = BlockDao()
+        super().__init__(BlockDao())
 
-    def create_block(self, block_data: Dict):
-        return self.block_dao.create(**block_data)
+    def create_block(self, block_id: str, material: str, dimensions: Dict[str, float], sensor_rail_width: float, sensors: List[Dict]) -> str:
+        self.dao.create(block_id, material, dimensions, sensor_rail_width, sensors)
+        return block_id
 
-    def add_sensor_to_block(self, block_id: str, sensor_data: Dict):
-        return self.block_dao.add_sensor(block_id, **sensor_data)
+    def add_sensor(self, block_id: str, sensor_id: str, sensor_name: str, position: Dict[str, float], orientation: str, calibration: str) -> str:
+        return self.dao.add_sensor(block_id, sensor_id, sensor_name, position, orientation, calibration)
 
-    def get_block_by_id(self, block_id: str):
-        return self.block_dao.find_block_by_id(block_id)
+    def get_block(self, block_id: str) -> Dict[str, Any]:
+        return self.dao.find_block_by_id(block_id)

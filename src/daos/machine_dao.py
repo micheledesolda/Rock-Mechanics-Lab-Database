@@ -1,12 +1,6 @@
 # src/daos/machine_dao.py
-# MongoDB connection details
-import pymongo
-from typing import List, Dict, Optional, Union, Tuple, Any
+from typing import Dict, Any
 import os
-import sys
-import csv
-import json
-import gridfs
 from nptdms import TdmsFile
 import matplotlib.pyplot as plt
 from daos.base_dao import BaseDao
@@ -16,7 +10,7 @@ url = os.getenv("MONGO_URL") or "mongodb://localhost:27017/"
 db_name = os.getenv("DB_NAME") or "EPS"
 machines_collection_name = os.getenv("COLLECTION_MACHINES") or "Machines"
 
-class Machine(BaseDao):
+class MachineDao(BaseDao):
     def __init__(self):
         """Initialize the MachineDao class with a connection to the MongoDB database."""
         super().__init__()
