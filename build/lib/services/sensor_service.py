@@ -7,9 +7,17 @@ class SensorService(BaseService):
     def __init__(self):
         super().__init__(SensorDao())
 
-    def create_sensor(self, sensor_id: str, model: str, resonance_frequency: float, calibration: Dict[str, Any], properties: Dict[str, Any]) -> str:
-        self.dao.create(sensor_id, model, resonance_frequency, calibration, properties)
-        return sensor_id
+    def create_sensor(self, sensor_id: str, sensor_type: str, model: str, resonance_frequency: float, properties: Dict[str, Any]) -> str:
+        try:
+            self.dao.create(sensor_id, sensor_type, model, resonance_frequency, properties)
+            return sensor_id
+        except Exception as e:
+            print(f"Error in create_sensor: {e}")  # Debugging line
+            raise
 
     def get_sensor(self, sensor_id: str) -> Dict[str, Any]:
-        return self.dao.find_sensor_by_id(sensor_id)
+        try:
+            return self.dao.find_sensor_by_id(sensor_id)
+        except Exception as e:
+            print(f"Error in get_sensor: {e}")  # Debugging line
+            raise

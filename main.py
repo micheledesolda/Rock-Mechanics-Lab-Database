@@ -1,14 +1,13 @@
 # main.py
-
+import os
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from api.routers import experiments
 from fastapi.responses import HTMLResponse
 from utils.mongo_utils import is_mongodb_running, start_mongodb
+from src.api.routers import blocks, core_samples, experiments, gouges, machines, sensors
 
-
-# Check connection to databse is working
+# Check connection to database is working
 if not is_mongodb_running():
     print("MongoDB is not running. Starting MongoDB...")
     start_mongodb()
@@ -18,11 +17,7 @@ else:
 app = FastAPI()
 
 # Configure CORS
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    # Add other origins as needed
-]
+origins = os.getenv("CORS_ORIGINS", "http://localhost,http://localhost:8000").split(",")
 
 app.add_middleware(
     CORSMiddleware,
@@ -33,7 +28,12 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(blocks.router, prefix="/blocks", tags=["blocks"])
+app.include_router(core_samples.router, prefix="/core_samples", tags=["core_samples"])
 app.include_router(experiments.router, prefix="/experiments", tags=["experiments"])
+app.include_router(gouges.router, prefix="/gouges", tags=["gouges"])
+app.include_router(machines.router, prefix="/machines", tags=["machines"])
+app.include_router(sensors.router, prefix="/sensors", tags=["sensors"])
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -42,14 +42,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 async def read_index():
     with open("static/index.html") as f:
         return HTMLResponse(content=f.read(), status_code=200)
-    
 
-# this is in case I want to run directly main.py. But at the moment, since I run the code with the combo:
-#       pip install e .
-#       uvicorn src.main:app --reload
-# from terminal, there is no need for it
 if __name__ == "__main__":
-    # Check connection to databse is working
     if not is_mongodb_running():
         print("MongoDB is not running. Starting MongoDB...")
         start_mongodb()

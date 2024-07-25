@@ -1,9 +1,11 @@
-# src/
+# src/api/routers/experiments.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Optional
+from typing import List, Dict, Any
+from src.services.experiment_service import ExperimentService
 
 router = APIRouter()
+experiment_service = ExperimentService()
 
 class Gouge(BaseModel):
     gouge_id: str
@@ -11,36 +13,38 @@ class Gouge(BaseModel):
 class Block(BaseModel):
     block_id: str
 
-class ExperimentCreate(BaseModel):
+class ExperimentCreateRequest(BaseModel):
     experiment_id: str
     experiment_type: str
     gouges: List[Gouge]
-    core_sample_id: Optional[str]
+    core_sample_id: str
     blocks: List[Block]
+    centralized_measurements: List[Dict]
+    additional_measurements: List[Dict]
 
-@router.post("/create")
-async def create_experiment(experiment: ExperimentCreate):
+@router.post("/", response_model=dict)
+def create_experiment(request: ExperimentCreateRequest):
     try:
-        experiment_id = experiment_dao.create_experiment(
-            experiment_id=experiment.experiment_id,
-            experiment_type=experiment.experiment_type,
-            gouges=[gouge.dict() for gouge in experiment.gouges],
-            core_sample_id=experiment.core_sample_id,
-            blocks=[block.dict() for block in experiment.blocks]
+        experiment_service.create_experiment(
+            experiment_id=request.experiment_id,
+            experiment_type=request.experiment_type,
+            gouges=[g.model_dump() for g in request.gouges],
+            core_sample_id=request.core_sample_id,
+            blocks=[b.model_dump() for b in request.blocks],
+            centralized_measurements=request.centralized_measurements,
+            additional_measurements=request.additional_measurements
         )
-        if not experiment_id:
-            raise HTTPException(status_code=500, detail="Experiment creation failed")
-        return {"message": f"Experiment {experiment_id} created successfully"}
+        return {"message": f"Experiment {request.experiment_id} created successfully"}
     except Exception as e:
-        print(f"Error creating experiment: {e}")
-        raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("/options")
-async def get_options():
-    # Mock data for options
-    options = {
-        "gouges": [{"id": "gouge1", "name": "Gouge 1"}, {"id": "gouge2", "name": "Gouge 2"}],
-        "core_sample_ids": [{"id": "sample1", "name": "Sample 1"}, {"id": "sample2", "name": "Sample 2"}],
-        "blocks": [{"id": "block1", "name": "Block 1"}, {"id": "block2", "name": "Block 2"}]
-    }
-    return options
+@router.get("/{experiment_id}", response_model=dict)
+def get_experiment(experiment_id: str):
+    try:
+        experiment = experiment_service.get_experiment_by_id(experiment_id)
+        if experiment:
+            return experiment
+        else:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

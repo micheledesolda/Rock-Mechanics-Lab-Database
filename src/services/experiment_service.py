@@ -6,14 +6,14 @@ from services.base_service import BaseService
 class ExperimentService(BaseService):
     def __init__(self):
         super().__init__(ExperimentDao())
-
-    def create_experiment(self, experiment_id: str, experiment_type: str, gouges: List[Dict], core_sample_id: str, blocks: List[Dict], centralized_measurements: List[Dict], additional_measurements: List[Dict]) -> str:
+        
+    def create_experiment(self, experiment_id: str, experiment_type: str, gouges: List[Dict]=[], core_sample_id: str="", blocks: List[Dict]=[], centralized_measurements: List[Dict]=[], additional_measurements: List[Dict]=[]) -> str:
         self.dao.create_experiment(experiment_id, experiment_type, gouges, core_sample_id, blocks, centralized_measurements, additional_measurements)
         return experiment_id
 
     def create_experiment_from_file(self, file_path: str, gouges: List[Dict], blocks: List[Dict]) -> str:
-        self.dao.create_experiment_from_file(file_path, gouges, blocks)
-        return file_path
+        experiment_id = self.dao.create_experiment_from_file(file_path, gouges, blocks)
+        return experiment_id
 
     def get_experiments(self, offset: int, limit: int) -> List[Dict[str, Any]]:
         return self.dao.read(offset, limit)

@@ -7,7 +7,11 @@ src/Rock_Mechanics_Lab_Database.egg-info/top_level.txt
 src/api/__init__.py
 src/api/routers/__init__.py
 src/api/routers/blocks.py
+src/api/routers/core_samples.py
 src/api/routers/experiments.py
+src/api/routers/gouges.py
+src/api/routers/machines.py
+src/api/routers/sensors.py
 src/daos/__init__.py
 src/daos/base_dao.py
 src/daos/block_dao.py
@@ -27,4 +31,6 @@ src/services/machine_service.py
 src/services/sensor_service.py
 src/utils/__init__.py
 src/utils/mongo_utils.py
+tests/test_experiment_services.py
+tests/test_routers.py
 tests/test_services.py
