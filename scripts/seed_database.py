@@ -1,17 +1,16 @@
-# src/scripts/seed_database.py
 import os
 from daos.experiment_dao import ExperimentDao
 from daos.block_dao import BlockDao
 from daos.gouge_dao import GougeDao
 from daos.sensor_dao import SensorDao
 from daos.core_sample_dao import CoreSampleDao
+from daos.machine_dao import MachineDao
 from utils.mongo_utils import is_mongodb_running, start_mongodb
-
 
 def seed_database():
 
     print("Seeding database...")
-    # seed_machines()
+    seed_machines()
     seed_sensors()
     seed_gouges()
     seed_coresamples()
@@ -21,7 +20,40 @@ def seed_database():
     print("Seeding database: done")
 
 def seed_machines():
-    pass
+    machineDao = MachineDao()
+    machine_id = "Brava2"
+    machine_type = "Biaxial Apparatus"
+    
+    pistons = {
+        "vertical": {
+            "calibration": {
+                "coefficients": [ -0.5043737 ,   4.27584024, -11.70546934,   5.45745069,
+                                29.43390033, -60.90428874,  60.98729795, 124.19783947,
+                                -0.47000267]
+            },
+            "stiffness": {
+                "coefficients": [ 3.35241499e-30, -9.37367134e-27,  1.19440060e-23, -9.17845027e-21,
+                                  4.74088379e-18, -1.73500082e-15,  4.61575497e-13, -9.00528796e-11,
+                                  1.28295415e-08, -1.31327065e-06,  9.38895324e-05, -4.50176164e-03,
+                                  1.38008389e-01, -2.63525139e+00,  3.57750394e+01,  1.71503762e+01]
+            }
+        },
+        "horizontal": {
+            "calibration": {
+                "coefficients": [-4.63355231e-02, -2.57055418e+00,  2.63055688e+01, -9.61932787e+01,
+                                 1.64685122e+02, -1.33648859e+02,  4.66773182e+01,  1.63975941e+02,
+                                 9.32438525e-02]
+            },
+            "stiffness": {
+                "coefficients": [ 2.43021220e-31, -7.73507440e-28,  1.10791696e-24, -9.43050473e-22,
+                                  5.30556343e-19, -2.07533887e-16,  5.77817817e-14, -1.15148744e-11,
+                                  1.62528123e-09, -1.57483543e-07,  9.75756659e-06, -3.16390679e-04,
+                                  1.96801181e-04,  2.69515293e-01,  5.53939566e+00,  4.21560673e+01]
+            }
+        }
+    }
+
+    machineDao.create(machine_id, machine_type, pistons)
 
 def seed_coresamples():
     coreSampleDao = CoreSampleDao()
