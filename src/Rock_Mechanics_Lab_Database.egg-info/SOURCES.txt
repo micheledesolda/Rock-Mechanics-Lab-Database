@@ -32,5 +32,6 @@ src/services/sensor_service.py
 src/utils/__init__.py
 src/utils/mongo_utils.py
 tests/test_experiment_services.py
+tests/test_machine_routers.py
 tests/test_routers.py
 tests/test_services.py
