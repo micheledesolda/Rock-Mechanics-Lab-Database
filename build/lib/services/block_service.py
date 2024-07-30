@@ -7,8 +7,8 @@ class BlockService(BaseService):
     def __init__(self):
         super().__init__(BlockDao())
 
-    def create_block(self, block_id: str, material: str, dimensions: Dict[str, float], sensor_rail_width: float, sensors: List[Dict]) -> str:
-        self.dao.create(block_id, material, dimensions, sensor_rail_width, sensors)
+    def create_block(self, block_id: str, material: str, dimensions: Dict[str, float], sensor_rail_width: float, sensors: List[Dict], description: str) -> str:
+        self.dao.create(block_id, material, dimensions, sensor_rail_width, sensors, description)
         return block_id
 
     def add_sensor(self, block_id: str, sensor_id: str, sensor_name: str, position: Dict[str, float], orientation: str, calibration: str) -> str:

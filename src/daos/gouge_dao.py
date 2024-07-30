@@ -21,14 +21,14 @@ class GougeDao(BaseDao):
         super().__init__()
         self.collection_name = gouges_collection_name
 
-    def create(self, gouge_id: str, material: str, grain_size_mum: float) -> None:
+    def create(self, gouge_id: str, material: str, grain_size: float) -> None:
         """Create a new gouge in the database."""
         conn, collection = self._get_connection(self.collection_name)
 
         gouge = {
             "_id": gouge_id,
             "material": material,
-            "grain_size_mum": grain_size_mum
+            "grain_size": grain_size
         }
         try:
             collection.insert_one(gouge)

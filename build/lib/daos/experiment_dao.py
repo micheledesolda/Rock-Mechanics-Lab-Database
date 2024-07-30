@@ -82,7 +82,7 @@ class ExperimentDao(BaseDao):
             for block in blocks:
                 self.add_block(experiment_id=experiment["_id"], block_id=block['block_id'], position=block['position'])
             for gouge in gouges:
-                self.add_gouge(experiment_id=experiment["_id"], gouge_id=gouge["gouge_id"], thickness_mm=gouge["thickness_mm"])
+                self.add_gouge(experiment_id=experiment["_id"], gouge_id=gouge["gouge_id"], thickness=gouge["thickness"])
             return experiment["_id"]
         except Exception as err:
             print(f"Adding experiment {experiment['_id']} to database failed!\nError: '{err}'")
@@ -144,6 +144,20 @@ class ExperimentDao(BaseDao):
 
         return {"properties": properties, "data": data}
 
+    # Fetching blocks for a given experiment
+    def find_blocks(self, experiment_id: str) -> List[Dict[str, float]]:
+        experiment = self.find_experiment_by_id(experiment_id)
+        if not experiment:
+            return []
+
+        block_dao = BlockDao()
+        blocks = []
+        for block_entry in experiment.get("blocks", []):
+            block = block_dao.find_block_by_id(block_entry["_id"])
+            if block:
+                blocks.append(block)
+        return blocks
+        
 ### Read: helper methods
     def _get_measurement_data(self, measurement: Dict) -> List:
         """Retrieve data from measurement, either from GridFS or directly."""
@@ -234,7 +248,7 @@ class ExperimentDao(BaseDao):
         except Exception as err:
             return f"Error adding block to experiment:\nError: '{err}'"
 
-    def add_gouge(self, experiment_id: str, gouge_id: str, thickness_mm: str) -> str:
+    def add_gouge(self, experiment_id: str, gouge_id: str, thickness: str) -> str:
         """Add a gouge to an experiment."""
         conn, collection = self._get_connection(self.collection_name) 
         gougeDao = GougeDao()
@@ -242,7 +256,7 @@ class ExperimentDao(BaseDao):
         if not gouge:
             return f"Gouge with ID {gouge_id} not found."
 
-        gouge_entry = {"_id": gouge_id, "thickness_mm": thickness_mm}
+        gouge_entry = {"_id": gouge_id, "thickness": thickness}
         try:
             update_result = collection.update_one(
                 {"_id": experiment_id},

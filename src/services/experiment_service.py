@@ -27,14 +27,17 @@ class ExperimentService(BaseService):
     def get_additional_measurements(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str, start_uw: int, end_uw: int) -> Dict:
         return self.dao.find_additional_measurements(experiment_id, measurement_type, measurement_sequence_id, start_uw, end_uw)
 
+    def get_blocks(self, experiment_id: str) -> List[Dict[str, float]]:
+        return self.dao.find_blocks(experiment_id)
+
     def update_experiment(self, experiment_id: str, update_fields: Dict[str, Any]) -> str:
         return self.dao.update(experiment_id, update_fields)
 
     def add_block(self, experiment_id: str, block_id: str, position: str) -> str:
         return self.dao.add_block(experiment_id, block_id, position)
 
-    def add_gouge(self, experiment_id: str, gouge_id: str, thickness_mm: str) -> str:
-        return self.dao.add_gouge(experiment_id, gouge_id, thickness_mm)
+    def add_gouge(self, experiment_id: str, gouge_id: str, thickness: str) -> str:
+        return self.dao.add_gouge(experiment_id, gouge_id, thickness)
 
     def add_centralized_measurements_from_tdms_file(self, experiment_id: str, file_path: str) -> Dict:
         return self.dao.add_centralized_measurements_from_tdms_file(experiment_id, file_path)

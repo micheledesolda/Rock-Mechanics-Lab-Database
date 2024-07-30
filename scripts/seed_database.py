@@ -1,3 +1,4 @@
+# srcipts/seed_database.py
 import os
 from daos.experiment_dao import ExperimentDao
 from daos.block_dao import BlockDao
@@ -28,7 +29,7 @@ def seed_machines():
     pistons = {
         "vertical": {
             "calibration": [
-                {
+                {       
                     "date": creation_date,
                     "coefficients": [ -0.5043737 ,   4.27584024, -11.70546934,   5.45745069,
                                     29.43390033, -60.90428874,  60.98729795, 124.19783947,
@@ -70,40 +71,93 @@ def seed_machines():
 
 def seed_coresamples():
     coreSampleDao = CoreSampleDao()
-    coreSampleDao.create(core_sample_id="san_donato_1", material="granite", dimensions={"diameter": 5.0, "height": 10.0})
-    coreSampleDao.create(core_sample_id="san_donato_13", material="dolomite", dimensions={"diameter": 5.0, "height": 10.0})
+    coreSampleDao.create(core_sample_id="san_donato_1", material="granite", dimensions={"diameter": 5.0, "height": 10.0, "units": "mm"})
+    coreSampleDao.create(core_sample_id="san_donato_13", material="dolomite", dimensions={"diameter": 5.0, "height": 10.0, "units": "mm"})
 
 def seed_gouges():
     gougeDao = GougeDao()
-    gougeDao.create(gouge_id="mont1", material="montmorillonite", grain_size_mum=125)
-    gougeDao.create(gouge_id="minusil", material="quartz", grain_size_mum=40)
-    gougeDao.create(gouge_id="F110", material="quartz", grain_size_mum=110)
+    gougeDao.create(gouge_id="mont1", material="montmorillonite", grain_size={"values":125, "units":"mum"})
+    gougeDao.create(gouge_id="minusil", material="quartz", grain_size={"values":40, "units":"mum"})
+    gougeDao.create(gouge_id="F110", material="quartz", grain_size={"values":110, "units":"mum"})
+    gougeDao.create(gouge_id="carrara", material="marble", grain_size={"values":None, "units":"mum"})
 
 def seed_sensors():
     available_sensors = [
-        {"sensor_id": "PZT_1", "sensor_type": "piezoelectric", "model": "P-871.20", "resonance_frequency": 1.0, "properties": {"material": "PZT"}},
-        {"sensor_id": "PZT_2", "sensor_type": "piezoelectric", "model": "P-871.30", "resonance_frequency": 3.0, "properties": {"material": "PZT"}},
-        {"sensor_id": "PZT_3", "sensor_type": "piezoelectric", "model": "P-871.40", "resonance_frequency": 5.0, "properties": {"material": "PZT"}}
+        {"sensor_id": "PI-shear plate-13x13x1", "sensor_type": "piezoelectric", "resonance_frequency": 1.8, "dimensions": {"side": 13, "height": 1, "units": "mm"}, "properties": {"material": "eCuNi"}},
+        {"sensor_id": "PI-shear plate-13x13x0.5", "sensor_type": "piezoelectric", "resonance_frequency": 4, "dimensions": {"side": 13, "height": 0.5, "units": "mm"}, "properties": {"material": "eCuNi"}},
+        {"sensor_id": "PI-shear plate-5x5x1", "sensor_type": "piezoelectric", "resonance_frequency": 2, "dimensions": {"side": 5, "height": 1, "units": "mm"}, "properties": {"material": "eCuNi"}},
+        {"sensor_id": "PI-shear plate-5x5x0.5", "sensor_type": "piezoelectric", "resonance_frequency": 4.0, "dimensions": {"side": 5, "height": 0.5, "units": "mm"}, "properties": {"material": "eCuNi"}},
+        {"sensor_id": "PI-disc-16x4", "sensor_type": "piezoelectric", "resonance_frequency": 0.5, "dimensions": {"diameter": 16, "height": 4, "units": "mm"}, "properties": {}},  # No material provided
+        {"sensor_id": "PI-disc-13x2", "sensor_type": "piezoelectric", "resonance_frequency": 1.0, "dimensions": {"diameter": 13, "height": 2, "units": "mm"}, "properties": {"material": "wAg"}},
+        {"sensor_id": "PI-disc-13x1", "sensor_type": "piezoelectric", "resonance_frequency": 2.0, "dimensions": {"diameter": 13, "height": 1, "units": "mm"}, "properties": {"material": "wAu"}},
+        {"sensor_id": "PI-disc-13x0.5", "sensor_type": "piezoelectric", "resonance_frequency": 4.0, "dimensions": {"diameter": 13, "height": 0.5, "units": "mm"}, "properties": {"material": "wAg"}},
+        {"sensor_id": "PI-disc-5x2", "sensor_type": "piezoelectric", "resonance_frequency": 1.0, "dimensions": {"diameter": 5, "height": 2, "units": "mm"}, "properties": {"material": "eAg"}},
+        {"sensor_id": "PI-disc-5x1", "sensor_type": "piezoelectric", "resonance_frequency": 2.0, "dimensions": {"diameter": 5, "height": 1, "units": "mm"}, "properties": {"material": "wAg"}},
+        {"sensor_id": "PI-disc-5x0.5", "sensor_type": "piezoelectric", "resonance_frequency": 4.0, "dimensions": {"diameter": 5, "height": 0.5, "units": "mm"}, "properties": {"material": "wAg"}},
+        {"sensor_id": "PI-DuraAct-16x13x0.5", "sensor_type": "piezoelectric", "resonance_frequency": 4.0, "dimensions": {"side": 16, "height": 0.5, "units": "mm"}, "properties": {}},  # No material provided
     ]
+
     sensorDao = SensorDao()
     for sensor in available_sensors:
         sensorDao.create(**sensor)
 
 def seed_blocks():
     blockDao = BlockDao()
-    blockDao.create(block_id="paglialberi_1", material="steel", dimensions={"width": 2.0, "height": 2.0, "depth": 4.8}, sensor_rail_width=0.5),
-    blockDao.create(block_id="paglialberi_2", material="steel", dimensions={"width": 2.0, "height": 2.0, "depth": 4.8}, sensor_rail_width=0.5),
-    blockDao.create(block_id="mem_1", material="steel", dimensions={"width": 2.0, "height": 2.0, "depth": 4.8}, sensor_rail_width=0.5)        
-    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PZT_1", sensor_name="S_left", position={"x": 0.5, "y": 1.0, "z": 0.2}, orientation="left", calibration="Calibration S_left")
-    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PZT_1", sensor_name="S_right", position={"x": 0.7, "y": 1.0, "z": 0.2}, orientation="up", calibration="Calibration S_right")
-    blockDao.add_sensor(block_id="paglialberi_2", sensor_id="PZT_2", sensor_name="P", position={"x": 1.5, "y": 1.0, "z": 0.2}, orientation=None, calibration="Calibration P")        
+    blockDao.create(block_id="paglialberi_1", 
+                    material="steel",
+                    velocities = {"vP": 5900, 
+                                     "vS": 3374, 
+                                     "units": "m/s"}, 
+                    dimensions = {"width": 50, 
+                                     "height": 50, 
+                                     "depth": 29.5,
+                                     "grooves": {"height":0.5,
+                                                 "base": 1},
+                                     "units": "mm"
+                                    }, 
+                    sensor_rail_width=5,
+                    description = "Parallelepiped, with grooves to hold the gouge in the shear direction\nvS has been measured, vP is just got from internet"),
+    blockDao.create(block_id="paglialberi_2", 
+                    material="steel",
+                    velocities = {  "vP": 5900, 
+                                    "vS": 3374,
+                                    "units": "m/s"}, 
+                    dimensions = {"width": 50, 
+                                    "height": 50, 
+                                    "depth": 29.5,
+                                    "grooves": {"height":0.5,
+                                                "base": 1},
+                                    "units": "mm"}, 
+                    sensor_rail_width=5,
+                    description = "Parallelepiped, with grooves to hold the gouge in the shear direction\nvS has been measured, vP is just got from internet"),
+    blockDao.create(block_id="central_1", 
+                    material="steel",
+                    velocities = {  "vP": 5900, 
+                                    "vS": 3374,
+                                    "units": "m/s"}, 
+                    dimensions = {  "width": 50, 
+                                    "height":  70, 
+                                    "depth": 49.16,
+                                    "grooves": {"height":1.0,
+                                                "base": 2.0},
+                                    "units": "mm"}, 
+                    sensor_rail_width=None,
+                    description = "Parallelepiped, with grooves to hold the gouge in the shear direction\nvS has been measured, vP is just got from internet"),
 
+    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PI-shear plate-5x5x1", sensor_name="s_left", position={"width": 20.0, "height": 25.0, "depth": 11.45}, orientation="left", calibration="Calibration s_left")
+    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PI-shear plate-5x5x1", sensor_name="s_right", position={"width": 30.0, "height": 25.0, "depth": 11.45}, orientation="up", calibration="Calibration s_right")
+    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PI-disc-5x1", sensor_name="p_up", position={"width": 25.0, "height": 34.0, "depth": 11.45}, orientation=None, calibration="Calibration p_up")
+    blockDao.add_sensor(block_id="paglialberi_1", sensor_id="PI-disc-5x1", sensor_name="p_down", position={"width": 25.0, "height": 16.0, "depth": 11.45}, orientation=None, calibration="Calibration p_down")
+    blockDao.add_sensor(block_id="paglialberi_2", sensor_id="PI-shear plate-5x5x1", sensor_name="s_left", position={"width": 20.0, "height": 25.0, "depth": 11.45}, orientation="up", calibration="Calibration s_left")
+    blockDao.add_sensor(block_id="paglialberi_2", sensor_id="PI-shear plate-5x5x1", sensor_name="s_right", position={"width": 30.0, "height": 25.0, "depth": 11.45}, orientation="right", calibration="Calibration s_right")
+    blockDao.add_sensor(block_id="paglialberi_2", sensor_id="PI-disc-5x1", sensor_name="p_up", position={"width": 25.0, "height": 34.0, "depth": 11.45}, orientation=None, calibration="Calibration p_up")
+    blockDao.add_sensor(block_id="paglialberi_2", sensor_id="PI-disc-5x1", sensor_name="p_down", position={"width": 25.0, "height": 16.0, "depth": 11.45}, orientation=None, calibration="Calibration p_down")       
 
 def seed_experiments():
     experimentDao = ExperimentDao()
 
-    # it is possible to insert an experiment providing explictely all the fields or part of them
-    experimentDao.create_experiment(experiment_id="test experiment_created_manually", 
+    # it is possible to insert an experiment providing explicitly all the fields or part of them
+    experimentDao.create_experiment(experiment_id="test_experiment_created_manually", 
                                     experiment_type="triaxial", 
                                     core_sample_id="san_donato_1", 
                                     centralized_measurements=[{"time_s":[1,2,3]},
@@ -111,7 +165,7 @@ def seed_experiments():
                                     additional_measurements=[{"amplitude_uw_mum":[10, 11, 12]},
                                                              {"emission_rate_ae":[12,5,28,0,0,31]}])
 
-    experimentDao.create_experiment(experiment_id="another test experiment_created_manually", 
+    experimentDao.create_experiment(experiment_id="another_test_experiment_created_manually", 
                                     experiment_type="Double Direct Shear", 
                                     gouges=[{"gouge_id":"mont1","thickness_mm":0.3}], 
                                     centralized_measurements=[{"time_s":[1,2,3]},
@@ -119,7 +173,7 @@ def seed_experiments():
                                     additional_measurements=[{"amplitude_uw_mum":[10, 11, 12]},
                                                              {"emission_rate_ae":[12,5,28,0,0,31]}])
 
-    # Here a specific implementation in case of tdms files, as those coming LabView interface of from Brava2
+    # Here a specific implementation in case of tdms files, as those coming from LabView interface or from Brava2
     dirname = os.path.dirname(__file__)
     test_dir = os.path.join(dirname, '../tests/test_data')
     file_name = "s0108sw06car102030.tdms"
@@ -135,7 +189,7 @@ def seed_experiments():
                                                                              {"emission_rate_ae":[12,5,28,0,0,31]}])
 
     # Example usage to add blocks, gouge or measurement to the experiments
-    experimentDao.add_gouge(experiment_id=experiment_id,gouge_id="mont1",thickness_mm=0.3)
+    experimentDao.add_gouge(experiment_id=experiment_id,gouge_id="mont1",thickness=0.3)
     experimentDao.add_block(experiment_id=experiment_id, block_id="paglialberi_2",position="right")
     # Measurement Data can be added after the experiment creation
     # NB: adding centralized measurements will overwrite the previous one!!!
@@ -149,11 +203,12 @@ def seed_experiments():
     file_name = "s0074sa03min50.tdms"
     experiment_path = os.path.join(test_dir,file_name)
     experiment_id = experimentDao.create_experiment_from_file(file_path=experiment_path)
-    experimentDao.add_gouge(experiment_id=experiment_id,gouge_id="minusil",thickness_mm=0.3)
-    experimentDao.add_block(experiment_id=experiment_id, block_id="paglialberi_1",position="right")
-    experimentDao.add_block(experiment_id=experiment_id, block_id="mem_1",position="left")
+    experimentDao.add_gouge(experiment_id=experiment_id,gouge_id="minusil",thickness=3)
+    experimentDao.add_block(experiment_id=experiment_id, block_id="paglialberi_1",position="left")
+    experimentDao.add_block(experiment_id=experiment_id, block_id="central_1",position="central")
+    experimentDao.add_block(experiment_id=experiment_id, block_id="paglialberi_2",position="right")
 
-## Actua code to seed the database
+## Actual code to seed the database
 
 if __name__ == "__main__":
     seed_database()

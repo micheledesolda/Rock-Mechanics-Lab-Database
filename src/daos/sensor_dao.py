@@ -15,17 +15,18 @@ class SensorDao(BaseDao):
         super().__init__()
         self.collection_name = sensors_collection_name
         
-    def create(self, sensor_id: str, sensor_type: str, model: str, resonance_frequency: float, properties: Dict[str,Any]) -> None:
+    def create(self, sensor_id: str, sensor_type: str, resonance_frequency: float, dimensions: Dict[str,Any], properties: Dict[str,Any]) -> None:
         """Create a new sensor in the database."""
         conn, collection = self._get_connection(self.collection_name)
 
         sensor = {
                  "_id": sensor_id, 
                  "sensor_type": sensor_type,
-                 "model": model, 
                  "resonance_frequency": resonance_frequency, 
+                 "dimensions": dimensions,
                  "properties": properties
         }
+
         try:
             collection.insert_one(sensor)
             print(f"Sensor {sensor_id} added to database.")

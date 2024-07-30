@@ -17,18 +17,25 @@ class BlockDao(BaseDao):
         self.collection_name = blocks_collection_name
 
 
-    def create(self, block_id: str, material: str, 
-               dimensions: Dict[str, float], sensor_rail_width: float, 
-               sensors: List[Dict] = []) -> None:
+    def create(self, 
+            block_id: str, 
+            material: str, 
+            velocities: Dict[str, Any],
+            dimensions: Dict[str, float],
+            sensor_rail_width: float, 
+            sensors: List[Dict] = [],
+            description: str = "") -> None:
         """Create a new block in the database."""
         conn, collection = self._get_connection(self.collection_name)
 
         block = {
             "_id":block_id,
             "material":material,
+            "velocities": velocities,
             "dimensions":dimensions,
             "sensor_rail_width":sensor_rail_width,
-            "sensors":[]
+            "sensors":[],
+            "description" : description
         }
 
         try:
@@ -59,7 +66,7 @@ class BlockDao(BaseDao):
             return f"Sensor with ID {sensor_id} not found."
 
         sensor_entry = {"_id": sensor_id, 
-                        "sensr_name" : sensor_name,
+                        "sensor_name" : sensor_name,
                         "position": position,
                         "orientation": orientation,
                         "calibration": calibration}

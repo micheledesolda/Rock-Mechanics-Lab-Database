@@ -27,6 +27,9 @@ class ExperimentService(BaseService):
     def get_additional_measurements(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str, start_uw: int, end_uw: int) -> Dict:
         return self.dao.find_additional_measurements(experiment_id, measurement_type, measurement_sequence_id, start_uw, end_uw)
 
+    def get_blocks(self, experiment_id: str) -> List[Dict[str, float]]:
+        return self.dao.find_blocks(experiment_id)
+
     def update_experiment(self, experiment_id: str, update_fields: Dict[str, Any]) -> str:
         return self.dao.update(experiment_id, update_fields)
 
