@@ -2,16 +2,9 @@
     "folders": [
         {
             "path": "."
+        },
+        {
+            "path": "../active_source_implementation/lab_UW"
         }
     ]
-}{
-	"folders": [
-		{
-			"path": "."
-		},
-		{
-			"path": "../active_source_implementation/lab_UW"
-		}
-	],
-	"settings": {}
 }

@@ -27,7 +27,7 @@ def seed_machines():
     creation_date = "Wednesday, March 15, 2023 9:52:34 AM"
     
     pistons = {
-        "vertical": {
+        "Vertical": {
             "calibration": [
                 {       
                     "date": creation_date,
@@ -46,7 +46,7 @@ def seed_machines():
                 }
             ]
         },
-        "horizontal": {
+        "Horizontal": {
             "calibration": [
                 {
                     "date": creation_date,
