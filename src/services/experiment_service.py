@@ -11,7 +11,7 @@ class ExperimentService(BaseService):
         self.dao.create_experiment(experiment_id, experiment_type, gouges, core_sample_id, blocks, centralized_measurements, additional_measurements)
         return experiment_id
 
-    def create_experiment_from_file(self, file_path: str, gouges: List[Dict], blocks: List[Dict]) -> str:
+    def create_experiment_from_file(self, file_path: str, gouges: List[Dict]=[], blocks: List[Dict]=[]) -> str:
         experiment_id = self.dao.create_experiment_from_file(file_path, gouges, blocks)
         return experiment_id
 
@@ -20,7 +20,10 @@ class ExperimentService(BaseService):
 
     def get_experiment_by_id(self, experiment_id: str) -> Dict[str, Any]:
         return self.dao.find_experiment_by_id(experiment_id)
-
+    
+    def get_all_experiment_ids(self) -> List[str]:
+        return self.dao.get_all_experiment_ids()
+    
     def get_centralized_measurements(self, experiment_id: str, group_name: str, channel_name: str) -> Dict:
         return self.dao.find_centralized_measurements(experiment_id, group_name, channel_name)
 

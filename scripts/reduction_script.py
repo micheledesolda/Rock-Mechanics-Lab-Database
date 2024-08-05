@@ -1,3 +1,5 @@
+# scripts/reduction_script.py
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -366,12 +368,33 @@ def process_layer_thickness(experiment_id,
 
     return layer_thickness_corrected_mm
 
+
+def calculate_gouge_area_from_blocks_dimensions(experiment_id):
+    
+    # Query for block dimensions
+    blocks = es.get_blocks(experiment_id=experiment_id)
+    if not blocks:
+        # Add the blocks used in the experiment if it is not been done already
+        es.add_block(experiment_id=experiment_id, block_id="paglialberi_1",position="left"),
+        es.add_block(experiment_id=experiment_id, block_id="central_1",position="central"),
+        es.add_block(experiment_id=experiment_id, block_id="paglialberi_2",position="right")
+        blocks = es.get_blocks(experiment_id=experiment_id)
+
+    # Calculate the gouge area
+    lateral_block_dimensions = blocks[0]["dimensions"]
+    gouge_area_mm2 = lateral_block_dimensions['width'] * lateral_block_dimensions['height']  
+    gouge_area_m2 = 1e-6 * gouge_area_mm2    # covnersion to [m^2]
+    return gouge_area_m2
+
 def main():
-    experiment_id = 's0144sa03min22'
+    experiment_id = 's0150st05anh_30'
     machine_id = 'Brava2'
     experiment_info = es.get_experiment_by_id(experiment_id)
     experiment_date = experiment_info['Start_Datetime']
-    gouge_area = 0.0025  # Example value for gouge area in m^2
+    gouge_area = calculate_gouge_area_from_blocks_dimensions(experiment_id=experiment_id)
+
+    # This must be the input of a manual measure
+    # if layer_thickness_measured_point == 0 it is assumed is the nominal bench measurement
     layer_thickness_measured_mm = 6  # Example layer thickness value in mm
     layer_thickness_measured_point = 0  # Example record number for layer thickness
     

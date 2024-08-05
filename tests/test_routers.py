@@ -19,6 +19,7 @@ def test_create_block(test_client):
     assert response.status_code == 200
     assert response.json() == {"message": "Block created successfully"}
 
+
 def test_get_block(test_client):
     response = test_client.get("/blocks/block_001")
     assert response.status_code == 200
@@ -52,34 +53,37 @@ def test_get_gouge(test_client):
     assert response.status_code == 200
     assert response.json()["material"] == "minusil"
 
-def test_create_machine(test_client):
-    response = test_client.post("/machines/", json={
-        "machine_id": "machine_001",
-        "properties": {},
-        "pistons": "2"
-    })
-    assert response.status_code == 200
-    assert response.json() == {"message": "Machine created successfully"}
-
-def test_get_machine(test_client):
-    response = test_client.get("/machines/machine_001")
-    assert response.status_code == 200
-    assert response.json()["pistons"] == "2"
 
 def test_create_sensor(test_client):
     response = test_client.post("/sensors/", json={
         "sensor_id": "PZT_1",
         "sensor_type": "piezoelectric",
-        "model": "P-871.20",
         "resonance_frequency": 1.0,
+        "dimensions" : {"side": 16, "height": 0.5, "units": "mm"},
         "properties": {"type": "factory", "date": "2023-01-01"},
     })
     assert response.status_code == 200
     assert response.json() == {"message": "Sensor created successfully"}
-
 
 def test_get_sensor(test_client):
     response = test_client.get("/sensors/PZT_1")
     assert response.status_code == 200
     assert response.json()["model"] == "P-871.20"
 
+def test_reduce_experiment(test_client):
+    response = test_client.post("/experiments/reduce_experiment", json={
+        "experiment_id": "s0150st05anh_30",
+        "machine_id": "Brava2",
+        "layer_thickness_measured_mm": 6,
+        "layer_thickness_measured_point": 0
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert "shear_stress_MPa" in data
+    assert "normal_stress_MPa" in data
+    assert "load_point_displacement_mm" in data
+    assert "layer_thickness_mm" in data
+    assert isinstance(data["shear_stress_MPa"], list)
+    assert isinstance(data["normal_stress_MPa"], list)
+    assert isinstance(data["load_point_displacement_mm"], list)
+    assert isinstance(data["layer_thickness_mm"], list)

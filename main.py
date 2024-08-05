@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from utils.mongo_utils import is_mongodb_running, start_mongodb
-from src.api.routers import blocks, core_samples, experiments, gouges, machines, sensors
+from api.routers import blocks, core_samples, experiments, gouges, machines, sensors
 
 # Check connection to database is working
 if not is_mongodb_running():

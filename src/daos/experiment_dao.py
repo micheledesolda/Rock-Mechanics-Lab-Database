@@ -14,6 +14,7 @@ MAXIMUM_DOCUMENT_SIZE = 16000000        # 16 MB, as for mongodb documentation
 CHUNK_SIZE = int(MAXIMUM_DOCUMENT_SIZE/8)
 MAXIMUM_DIRECT_ENTRY_SIZE = 20000       # 20 KB. Anything above is stored in chunks at most equal CHUNK_SIZE
 experiments_collection_name = os.getenv("COLLECTION_EXPERIMENTS") or "Experiments"
+vi_data_group_name = os.getenv("VI_DATA_GROUP_NAME") or "ADC"
 
 class ExperimentDao(BaseDao):
     def __init__(self):
@@ -122,6 +123,19 @@ class ExperimentDao(BaseDao):
         finally:
             conn.close()
 
+    def get_all_experiment_ids(self) -> List[str]:
+        """Retrieve all experiment IDs from the database."""
+        conn, collection = self._get_connection(self.collection_name)
+        try:
+            experiments = collection.find({}, {"_id": 1})
+            experiment_ids = [str(experiment["_id"]) for experiment in experiments]
+            return experiment_ids
+        except Exception as err:
+            print(f"Error retrieving experiment IDs:\nError: '{err}'")
+            return []
+        finally:
+            conn.close()
+            
     def find_centralized_measurements(self, experiment_id: str, group_name: str, channel_name: str) -> Dict:
         """Retrieve centralized measurements and properties for a specific experiment and channel."""
         measurement = self._get_measurement_properties(experiment_id, group_name, channel_name)
@@ -133,6 +147,32 @@ class ExperimentDao(BaseDao):
         
         return {"properties": properties, "data": data}
 
+
+    def find_centralized_measurements(self, experiment_id: str, group_name: str = vi_data_group_name, channel_name: str = "All") -> Dict:
+        """Retrieve centralized measurements and properties for a specific experiment and channel."""
+        if (channel_name == "All") and (group_name == vi_data_group_name):
+            _, collection = self._get_connection(self.collection_name)
+
+            measurement = collection.find_one(
+                {"_id": experiment_id},
+                {f"centralized_measurements.{group_name}": 1, "_id": 0}
+            )["centralized_measurements"].get(group_name, {})
+            channels = {}
+            for channel_name in measurement.keys():
+                channel_dict = self.find_centralized_measurements(experiment_id=experiment_id, group_name=group_name, channel_name=channel_name)
+                channels[channel_name] = channel_dict
+            
+            return channels
+
+        measurement = self._get_measurement_properties(experiment_id, group_name, channel_name)
+        if not measurement:
+            return {}
+        
+        properties = measurement.get("properties", {})
+        data = self._get_measurement_data(measurement)
+        
+        return {"properties": properties, "data": data}
+    
     def find_additional_measurements(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str, start_uw: int, end_uw: int) -> Dict:
         """Retrieve additional measurements and properties for a specific experiment and range of uw_numbers."""
         measurement = self._get_additional_measurement_properties(experiment_id, measurement_type, measurement_sequence_id)
@@ -159,6 +199,22 @@ class ExperimentDao(BaseDao):
         return blocks
         
 ### Read: helper methods
+    def _get_measurement_properties(self, experiment_id: str, group_name: str, channel_name: str) -> Dict:
+        """Retrieve properties of the specified measurement."""
+        conn, collection = self._get_connection(self.collection_name)
+        try:
+            measurement = collection.find_one(
+                {"_id": experiment_id},
+                {f"centralized_measurements.{group_name}.{channel_name}": 1, "_id": 0}
+            )["centralized_measurements"][group_name][channel_name]
+            return measurement
+        except Exception as err:
+            print(f"Error retrieving measurement properties:\nError: '{err}'")
+            print(f"Group name: {group_name}\nChannel name: {channel_name}")
+            return {}
+        finally:
+            conn.close()
+
     def _get_measurement_data(self, measurement: Dict) -> List:
         """Retrieve data from measurement, either from GridFS or directly."""
         data = []
@@ -171,21 +227,6 @@ class ExperimentDao(BaseDao):
         except Exception as err:
             print(f"Error retrieving measurement data:\nError: '{err}'")
         return data
-
-    def _get_measurement_properties(self, experiment_id: str, group_name: str, channel_name: str) -> Dict:
-        """Retrieve properties of the specified measurement."""
-        conn, collection = self._get_connection(self.collection_name)
-        try:
-            measurement = collection.find_one(
-                {"_id": experiment_id},
-                {f"centralized_measurements.{group_name}.{channel_name}": 1, "_id": 0}
-            )["centralized_measurements"][group_name][channel_name]
-            return measurement
-        except Exception as err:
-            print(f"Error retrieving measurement properties:\nError: '{err}'")
-            return {}
-        finally:
-            conn.close()
 
     def _get_additional_measurement_properties(self, experiment_id: str, measurement_type: str, measurement_sequence_id: str)  -> Dict:
         """Retrieve properties of the specified additional measurement."""

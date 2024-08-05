@@ -112,7 +112,7 @@ class MachineDao(BaseDao):
 
         Args:
             machine_id (str): Unique identifier for the machine.
-            piston_name (str): Name of the piston ('vertical' or 'horizontal').
+            piston_name (str): Name of the piston ('Vertical' or 'Horizontal').
             calibration (Dict[str, Any]): Calibration coefficients.
             calibration_date (str): Date of the calibration.
 
@@ -179,7 +179,7 @@ class MachineDao(BaseDao):
 
         Args:
             machine_id (str): Unique identifier for the machine.
-            piston_name (str): Name of the piston ('vertical' or 'horizontal').
+            piston_name (str): Name of the piston ('Vertical' or 'Horizontal').
             voltage (float): Voltage measurement (offsetted).
             experiment_date (str): Date of the experiment.
 
@@ -208,7 +208,7 @@ class MachineDao(BaseDao):
 
         Args:
             machine_id (str): Unique identifier for the machine.
-            piston_name (str): Name of the piston ('vertical' or 'horizontal').
+            piston_name (str): Name of the piston ('Vertical' or 'Horizontal').
             force (float): Force measurement (kN).
             experiment_date (str): Date of the experiment.
 

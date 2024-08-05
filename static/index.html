@@ -3,51 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Experiment Manager</title>
-    <link rel="stylesheet" href="/static/css/styles.css">
+    <title>Experiment Data Reduction</title>
+    <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-    <h1>Experiment Manager</h1>
-    <form id="experimentForm">
-        <div class="form-row">
-            <label for="experiment_id">Experiment Id:</label>
-            <input type="text" id="experiment_id" name="experiment_id">
+    <div id="app">
+        <h1>Experiment Data Reduction</h1>
+        
+        <div>
+            <input type="text" id="experimentId" placeholder="Enter Experiment ID">
+            <button onclick="showExperimentDropdown()">Select Experiment</button>
+            <div id="experimentDropdown" class="dropdown-content">
+                <!-- List of experiment IDs will be appended here -->
+            </div>
+            <input type="file" id="experimentFile" onchange="fillExperimentId()">
+            <button onclick="uploadExperiment()">Upload New Experiment</button>
         </div>
 
-        <div class="form-row">
-            <label for="experiment_type">Experiment Type:</label>
-            <select id="experiment_type" name="experiment_type">
-                <option value="type1">Double Direct Shear</option>
-                <option value="type2">Triaxial</option>
-                <!-- Add more types as needed -->
-            </select>
+        <div>
+            <button onclick="fetchMeasurements()">Get Measurements</button>
         </div>
 
-        <div class="form-row">
-            <label for="gouges">Gouges:</label>
-            <select id="gouges" name="gouges" multiple>
-                <!-- Options will be populated via JavaScript -->
-            </select>
+        <div id="measurements">
+            <!-- Measurements will be displayed here -->
         </div>
 
-        <div class="form-row">
-            <label for="core_sample_id">Core Sample ID:</label>
-            <select id="core_sample_id" name="core_sample_id">
-                <!-- Options will be populated via JavaScript -->
-            </select>
+        <div id="operations">
+            <!-- Operations flow will be displayed here -->
         </div>
 
-        <div class="form-row">
-            <label for="blocks">Blocks:</label>
-            <select id="blocks" name="blocks" multiple>
-                <!-- Options will be populated via JavaScript -->
-            </select>
+        <div id="visualization">
+            <!-- Visualization plots will be displayed here -->
         </div>
 
-        <button type="submit">Create Experiment</button>
-    </form>
-    <div id="message"></div>
+        <div>
+            <button onclick="saveMeasurements()">Save Processed Measurements</button>
+        </div>
+    </div>
 
-    <script src="/static/js/experiment.js"></script>  
+    <script src="/static/scripts.js"></script>
 </body>
 </html>

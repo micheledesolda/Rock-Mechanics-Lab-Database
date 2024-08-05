@@ -10,8 +10,8 @@ sensor_service = SensorService()
 class SensorCreateRequest(BaseModel):
     sensor_id: str
     sensor_type: str
-    model: str
     resonance_frequency: float
+    dimensions: Dict[str, Any]
     properties: Dict[str, Any]
 
 @router.post("/", response_model=dict)
