@@ -30,6 +30,8 @@ def fetch_load_measurements(experiment_id, piston_name, group_name='ADC'):
     offset = intercept/visualization_slope
     load_volt = load_recorded + offset
 
+    print(f"fetch_load_measurements - load_volt: {load_volt}")
+
     return load_volt
 
 def apply_calibration(machine_id, piston_name, load_volt, experiment_date):
@@ -87,6 +89,11 @@ def detect_touch_point(force_readings, check_up2load=10):
     Returns:
     - The index of the touch point.
     """
+    if force_readings is None:
+        print("detect_touch_point - force_readings is None")
+    else:
+        print(f"detect_touch_point - force_readings: {force_readings[:10]}")  # print first 10 elements
+
     min_list = []
     max_list = []
     average_list = []
@@ -141,6 +148,9 @@ def preprocessing_for_piston_noise(measurement):
     np.ndarray: Preprocessed measurements.
     """
     touch_point = detect_touch_point(measurement)
+    if touch_point == -1:
+        print("preprocessing_for_piston_noise - touch_point not detected, returning original measurement")
+        return measurement
     measurement = measurement - measurement[touch_point]  # Remove noise before load is applied
     measurement[:touch_point] = measurement[:touch_point] * 0
     measurement = np.where(measurement > 0, measurement, 0)
@@ -387,7 +397,7 @@ def calculate_gouge_area_from_blocks_dimensions(experiment_id):
     return gouge_area_m2
 
 def main():
-    experiment_id = 's0150st05anh_30'
+    experiment_id = 's0037sa03min12'
     machine_id = 'Brava2'
     experiment_info = es.get_experiment_by_id(experiment_id)
     experiment_date = experiment_info['Start_Datetime']

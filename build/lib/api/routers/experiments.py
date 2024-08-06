@@ -13,6 +13,7 @@ from scripts.reduction_script import (
 )
 import csv
 
+
 router = APIRouter()
 experiment_service = ExperimentService()
 
@@ -57,67 +58,6 @@ def get_experiment(experiment_id: str):
             raise HTTPException(status_code=404, detail="Experiment not found")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
-
-class ExperimentReductionRequest(BaseModel):
-    experiment_id: str
-    machine_id: str
-    layer_thickness_measured_mm: Optional[float] = None
-    layer_thickness_measured_point: Optional[int] = 0
-
-class ExperimentReductionResponse(BaseModel):
-    shear_stress_MPa: List[float]
-    normal_stress_MPa: List[float]
-    load_point_displacement_mm: List[float]
-    layer_thickness_mm: List[float]
-
-@router.post("/reduce_experiment", response_model=ExperimentReductionResponse)
-def reduce_experiment(data: ExperimentReductionRequest):
-    experiment_id = data.experiment_id
-    machine_id = data.machine_id
-    layer_thickness_measured_mm = data.layer_thickness_measured_mm or 6
-    layer_thickness_measured_point = data.layer_thickness_measured_point
-
-    experiment_info = experiment_service.get_experiment_by_id(experiment_id)
-    if not experiment_info:
-        raise HTTPException(status_code=404, detail="Experiment not found")
-    
-    experiment_date = experiment_info['Start_Datetime']
-    gouge_area = calculate_gouge_area_from_blocks_dimensions(experiment_id=experiment_id)
-    
-    shear_stress_MPa = process_vertical_load_measurements(
-        experiment_id=experiment_id,
-        machine_id=machine_id,
-        experiment_date=experiment_date,
-        gouge_area=gouge_area
-    )
-    
-    normal_stress_MPa = process_horizontal_load_measurements(
-        experiment_id=experiment_id,
-        machine_id=machine_id,
-        experiment_date=experiment_date,
-        gouge_area=gouge_area
-    )
-    
-    load_point_displacement_mm = process_load_point_displacement(
-        experiment_id=experiment_id,
-        machine_id=machine_id,
-        experiment_date=experiment_date
-    )
-    
-    layer_thickness_mm = process_layer_thickness(
-        experiment_id=experiment_id,
-        machine_id=machine_id,
-        experiment_date=experiment_date,
-        layer_thickness_measured_mm=layer_thickness_measured_mm,
-        layer_thickness_measured_point=layer_thickness_measured_point
-    )
-
-    return ExperimentReductionResponse(
-        shear_stress_MPa=shear_stress_MPa.tolist(),
-        normal_stress_MPa=normal_stress_MPa.tolist(),
-        load_point_displacement_mm=load_point_displacement_mm.tolist(),
-        layer_thickness_mm=layer_thickness_mm.tolist()
-    )
 
 @router.get("/{experiment_id}/measurements", response_model=List[str])
 async def get_adc_channel_names(experiment_id: str):
@@ -192,4 +132,66 @@ async def save_measurements(experiment_id: str, measurements: List[Any]):
         return {"file_location": file_location}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+class ExperimentReductionRequest(BaseModel):
+    experiment_id: str
+    machine_id: str
+    layer_thickness_measured_mm: Optional[float] = None
+    layer_thickness_measured_point: Optional[int] = 0
+
+class ExperimentReductionResponse(BaseModel):
+    shear_stress_MPa: List[float]
+    normal_stress_MPa: List[float]
+    load_point_displacement_mm: List[float]
+    layer_thickness_mm: List[float]
+
+@router.post("/reduce_experiment", response_model=ExperimentReductionResponse)
+def reduce_experiment(data: ExperimentReductionRequest):
+    experiment_id = data.experiment_id
+    machine_id = data.machine_id
+    layer_thickness_measured_mm = data.layer_thickness_measured_mm or 6
+    layer_thickness_measured_point = data.layer_thickness_measured_point
+
+    experiment_info = experiment_service.get_experiment_by_id(experiment_id)
+    if not experiment_info:
+        raise HTTPException(status_code=404, detail="Experiment not found")
+    
+    experiment_date = experiment_info['Start_Datetime']
+    gouge_area = calculate_gouge_area_from_blocks_dimensions(experiment_id=experiment_id)
+    
+    shear_stress_MPa = process_vertical_load_measurements(
+        experiment_id=experiment_id,
+        machine_id=machine_id,
+        experiment_date=experiment_date,
+        gouge_area=gouge_area
+    )
+    
+    normal_stress_MPa = process_horizontal_load_measurements(
+        experiment_id=experiment_id,
+        machine_id=machine_id,
+        experiment_date=experiment_date,
+        gouge_area=gouge_area
+    )
+    
+    load_point_displacement_mm = process_load_point_displacement(
+        experiment_id=experiment_id,
+        machine_id=machine_id,
+        experiment_date=experiment_date
+    )
+    
+    layer_thickness_mm = process_layer_thickness(
+        experiment_id=experiment_id,
+        machine_id=machine_id,
+        experiment_date=experiment_date,
+        layer_thickness_measured_mm=layer_thickness_measured_mm,
+        layer_thickness_measured_point=layer_thickness_measured_point
+    )
+
+    return ExperimentReductionResponse(
+        shear_stress_MPa=shear_stress_MPa.tolist(),
+        normal_stress_MPa=normal_stress_MPa.tolist(),
+        load_point_displacement_mm=load_point_displacement_mm.tolist(),
+        layer_thickness_mm=layer_thickness_mm.tolist()
+    )
 

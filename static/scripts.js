@@ -42,32 +42,90 @@ function displayChannelNames(channelNames) {
 
 async function processMeasurement(channelName) {
     const experimentId = document.getElementById('experimentId').value;
-    alert(`Processing measurement for channel: ${channelName} in experiment: ${experimentId}`);
-    // Additional logic to process the measurement can be added here
+    const machineId = 'YourMachineID';  // Replace with the actual machine ID or logic to get it
+    const layerThicknessMeasuredMm = 6;  // Replace with actual value or logic to get it
+    const layerThicknessMeasuredPoint = 0;  // Replace with actual value or logic to get it
+
+    const data = {
+        experiment_id: experimentId,
+        machine_id: machineId,
+        layer_thickness_measured_mm: layerThicknessMeasuredMm,
+        layer_thickness_measured_point: layerThicknessMeasuredPoint
+    };
+
+    try {
+        const response = await fetch('/experiments/reduce_experiment', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (!response.ok) {
+            console.error('Failed to process measurement', response.status);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            return;
+        }
+
+        const result = await response.json();
+        console.log('Processed measurement result:', result);
+
+        // Display the processed results
+        displayProcessedResults(result);
+
+    } catch (error) {
+        console.error('Error processing measurement:', error);
+    }
 }
+
+function displayProcessedResults(result) {
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = `
+        <h3>Processed Results:</h3>
+        <p>Shear Stress (MPa): ${result.shear_stress_MPa}</p>
+        <p>Normal Stress (MPa): ${result.normal_stress_MPa}</p>
+        <p>Load Point Displacement (mm): ${result.load_point_displacement_mm}</p>
+        <p>Layer Thickness (mm): ${result.layer_thickness_mm}</p>
+    `;
+}
+
 
 async function fetchExperiments() {
     console.log('Fetching experiments...');
-    const response = await fetch('/experiments/all_ids');
-    if (!response.ok) {
-        console.error('Failed to fetch experiments', response.status);
-        return;
+    try {
+        const response = await fetch('/experiments/experiments/all_ids');
+        if (!response.ok) {
+            console.error('Failed to fetch experiments', response.status);
+            const errorText = await response.text();
+            console.error('Error details:', errorText);
+            return;
+        }
+        const experimentIds = await response.json();
+        console.log('Fetched experiment IDs:', experimentIds);
+        displayExperimentIds(experimentIds);
+    } catch (error) {
+        console.error('Error fetching experiments:', error);
     }
-    const experimentIds = await response.json();
-    console.log('Fetched experiment IDs:', experimentIds);
-    displayExperimentIds(experimentIds);
 }
 
 function displayExperimentIds(experimentIds) {
     const dropdown = document.getElementById('experimentDropdown');
     dropdown.innerHTML = ''; // Clear existing content
-    experimentIds.forEach(id => {
-        const a = document.createElement('a');
-        a.textContent = id;
-        a.href = "#";
-        a.onclick = () => selectExperiment(id);
-        dropdown.appendChild(a);
-    });
+    if (experimentIds.length === 0) {
+        const noExperimentsMessage = document.createElement('p');
+        noExperimentsMessage.textContent = 'No experiments found';
+        dropdown.appendChild(noExperimentsMessage);
+    } else {
+        experimentIds.forEach(id => {
+            const listItem = document.createElement('a');
+            listItem.textContent = id;
+            listItem.href = "#";
+            listItem.onclick = () => selectExperiment(id);
+            dropdown.appendChild(listItem);
+        });
+    }
     console.log('Dropdown updated with experiment IDs.');
 }
 
