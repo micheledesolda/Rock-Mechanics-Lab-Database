@@ -5,43 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Experiment Data Reduction</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <link rel="shortcut icon" href="">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 </head>
 <body>
-    <div id="app">
-        <h1>Experiment Data Reduction</h1>
-        
-        <div>
-            <input type="text" id="experimentId" placeholder="Enter Experiment ID">
-            <button onclick="showExperimentDropdown()">Select Experiment</button>
-            <div id="experimentDropdown" class="dropdown-content">
-                <!-- List of experiment IDs will be appended here -->
+    <div class="container">
+        <div class="column left">
+            <h1>Experiment Data Reduction</h1>
+            <div class="form-group">
+                <input type="text" id="experimentId" placeholder="Enter Experiment ID">
+                <button onclick="showExperimentDropdown()">Select Experiment</button>
+                <div id="experimentDropdown" class="dropdown-content">
+                    <!-- List of experiment IDs will be appended here -->
+                </div>
+                <input type="file" id="experimentFile" onchange="fillExperimentId()">
+                <button onclick="uploadExperiment()">Upload New Experiment</button>
             </div>
-            <input type="file" id="experimentFile" onchange="fillExperimentId()">
-            <button onclick="uploadExperiment()">Upload New Experiment</button>
         </div>
 
-        <div>
+        <div class="column middle">
             <button onclick="fetchMeasurements()">Get Measurements</button>
-        </div>
+            <div id="inputFields" class="form-group">
+                <!-- Input fields for machine_id, layer_thickness_measured_mm, and layer_thickness_measured_point will be displayed here -->
+            </div>
 
-        <div id="measurements">
-            <!-- Measurements will be displayed here -->
-        </div>
+            <div id="measurements">
+                <!-- Measurements will be displayed here -->
+            </div>
 
-        <div id="operations">
-            <!-- Operations flow will be displayed here -->
-        </div>
-
-        <div id="visualization">
-            <!-- Visualization plots will be displayed here -->
-        </div>
-
-        <div>
             <button onclick="saveMeasurements()">Save Processed Measurements</button>
         </div>
 
-        <div id="result">
-            <!-- Processed results will be displayed here -->
+        <div class="column right">
+            <div id="plot" style="width:100%; height:600px;"></div>
         </div>
     </div>
 

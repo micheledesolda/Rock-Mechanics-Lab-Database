@@ -12,6 +12,13 @@ function fillExperimentId() {
 
 async function fetchMeasurements() {
     const experimentId = document.getElementById('experimentId').value;
+    // Add input fields for machine_id, layer_thickness_measured_mm, and layer_thickness_measured_point
+    const inputFieldsDiv = document.getElementById('inputFields');
+    inputFieldsDiv.innerHTML = `
+        <input type="text" id="machineId" placeholder="Enter Machine ID">
+        <input type="number" id="layerThicknessMeasuredMm" placeholder="Enter Layer Thickness Measured (mm)">
+        <input type="number" id="layerThicknessMeasuredPoint" placeholder="Enter Layer Thickness Measured Point">
+    `;
     const response = await fetch(`/experiments/${experimentId}/measurements`);
     const channelNames = await response.json();
     displayChannelNames(channelNames);
@@ -32,9 +39,14 @@ function displayChannelNames(channelNames) {
         processButton.textContent = 'Process measurement';
         processButton.onclick = () => processMeasurement(name);
 
-        // Append the span and button to the list item
+        // Create a container for the button to align them
+        const buttonContainer = document.createElement('div');
+        buttonContainer.classList.add('measurement-buttons');
+        buttonContainer.appendChild(processButton);
+
+        // Append the span and button container to the list item
         listItem.appendChild(span);
-        listItem.appendChild(processButton);
+        listItem.appendChild(buttonContainer);
         list.appendChild(listItem);
     });
     measurementsDiv.appendChild(list);
@@ -42,9 +54,9 @@ function displayChannelNames(channelNames) {
 
 async function processMeasurement(channelName) {
     const experimentId = document.getElementById('experimentId').value;
-    const machineId = 'YourMachineID';  // Replace with the actual machine ID or logic to get it
-    const layerThicknessMeasuredMm = 6;  // Replace with actual value or logic to get it
-    const layerThicknessMeasuredPoint = 0;  // Replace with actual value or logic to get it
+    const machineId = document.getElementById('machineId').value;
+    const layerThicknessMeasuredMm = document.getElementById('layerThicknessMeasuredMm').value || 6;
+    const layerThicknessMeasuredPoint = document.getElementById('layerThicknessMeasuredPoint').value || 0;
 
     const data = {
         experiment_id: experimentId,
@@ -53,8 +65,24 @@ async function processMeasurement(channelName) {
         layer_thickness_measured_point: layerThicknessMeasuredPoint
     };
 
-    try {
-        const response = await fetch('/experiments/reduce_experiment', {
+    let endpoint = '';
+    let yAxisLabel = '';
+    if (channelName === 'Vertical Load') {
+        endpoint = `/experiments/${experimentId}/process_vertical_load`;
+        yAxisLabel = 'Shear Stress (MPa)';
+    } else if (channelName === 'Horizontal Load') {
+        endpoint = `/experiments/${experimentId}/process_horizontal_load`;
+        yAxisLabel = 'Normal Stress (MPa)';
+    } else if (channelName === 'Vertical Displacement') {
+        endpoint = `/experiments/${experimentId}/process_vertical_displacement`;
+        yAxisLabel = 'Load Point Displacement (mm)';
+    } else if (channelName === 'Horizontal Displacement') {
+        endpoint = `/experiments/${experimentId}/process_horizontal_displacement`;
+        yAxisLabel = 'Layer Thickness (mm)';
+    }
+
+    if (endpoint) {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -62,35 +90,32 @@ async function processMeasurement(channelName) {
             body: JSON.stringify(data)
         });
 
-        if (!response.ok) {
-            console.error('Failed to process measurement', response.status);
-            const errorText = await response.text();
-            console.error('Error details:', errorText);
-            return;
-        }
-
         const result = await response.json();
-        console.log('Processed measurement result:', result);
-
-        // Display the processed results
-        displayProcessedResults(result);
-
-    } catch (error) {
-        console.error('Error processing measurement:', error);
+        console.log(result);
+        updatePlot(channelName, result, yAxisLabel);
+        alert(`Processed ${channelName} for experiment: ${experimentId}`);
+    } else {
+        alert('No processing method defined for this channel.');
     }
 }
 
-function displayProcessedResults(result) {
-    const resultDiv = document.getElementById('result');
-    resultDiv.innerHTML = `
-        <h3>Processed Results:</h3>
-        <p>Shear Stress (MPa): ${result.shear_stress_MPa}</p>
-        <p>Normal Stress (MPa): ${result.normal_stress_MPa}</p>
-        <p>Load Point Displacement (mm): ${result.load_point_displacement_mm}</p>
-        <p>Layer Thickness (mm): ${result.layer_thickness_mm}</p>
-    `;
-}
+function updatePlot(channelName, data, yAxisLabel) {
+    const plotDiv = document.getElementById('plot');
+    const trace = {
+        x: [...Array(data.length).keys()],
+        y: data,
+        mode: 'lines',
+        name: channelName
+    };
 
+    const layout = {
+        title: 'Measurement Data',
+        xaxis: { title: 'Record Number' },
+        yaxis: { title: yAxisLabel },
+    };
+
+    Plotly.newPlot(plotDiv, [trace], layout);
+}
 
 async function fetchExperiments() {
     console.log('Fetching experiments...');
@@ -113,19 +138,14 @@ async function fetchExperiments() {
 function displayExperimentIds(experimentIds) {
     const dropdown = document.getElementById('experimentDropdown');
     dropdown.innerHTML = ''; // Clear existing content
-    if (experimentIds.length === 0) {
-        const noExperimentsMessage = document.createElement('p');
-        noExperimentsMessage.textContent = 'No experiments found';
-        dropdown.appendChild(noExperimentsMessage);
-    } else {
-        experimentIds.forEach(id => {
-            const listItem = document.createElement('a');
-            listItem.textContent = id;
-            listItem.href = "#";
-            listItem.onclick = () => selectExperiment(id);
-            dropdown.appendChild(listItem);
-        });
-    }
+    const list = document.createElement('ul');
+    experimentIds.forEach(id => {
+        const listItem = document.createElement('a');
+        listItem.textContent = id;
+        listItem.href = "#";
+        listItem.onclick = () => selectExperiment(id);
+        dropdown.appendChild(listItem);
+    });
     console.log('Dropdown updated with experiment IDs.');
 }
 
