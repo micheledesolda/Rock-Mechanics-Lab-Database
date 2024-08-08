@@ -1,5 +1,7 @@
 // scripts.js
 
+let plotData = {};
+
 function fillExperimentId() {
     const fileInput = document.getElementById('experimentFile');
     const experimentIdInput = document.getElementById('experimentId');
@@ -12,7 +14,6 @@ function fillExperimentId() {
 
 async function fetchMeasurements() {
     const experimentId = document.getElementById('experimentId').value;
-    // Add input fields for machine_id, layer_thickness_measured_mm, and layer_thickness_measured_point
     const inputFieldsDiv = document.getElementById('inputFields');
     inputFieldsDiv.innerHTML = `
         <input type="text" id="machineId" placeholder="Enter Machine ID">
@@ -34,17 +35,14 @@ function displayChannelNames(channelNames) {
         const span = document.createElement('span');
         span.textContent = name;
 
-        // Create the "Process measurement" button
         const processButton = document.createElement('button');
         processButton.textContent = 'Process measurement';
         processButton.onclick = () => processMeasurement(name);
 
-        // Create a container for the button to align them
         const buttonContainer = document.createElement('div');
         buttonContainer.classList.add('measurement-buttons');
         buttonContainer.appendChild(processButton);
 
-        // Append the span and button container to the list item
         listItem.appendChild(span);
         listItem.appendChild(buttonContainer);
         list.appendChild(listItem);
@@ -66,19 +64,20 @@ async function processMeasurement(channelName) {
     };
 
     let endpoint = '';
-    let yAxisLabel = '';
+    let plotKey = '';
+
     if (channelName === 'Vertical Load') {
         endpoint = `/experiments/${experimentId}/process_vertical_load`;
-        yAxisLabel = 'Shear Stress (MPa)';
+        plotKey = 'shear_stress_MPa';
     } else if (channelName === 'Horizontal Load') {
         endpoint = `/experiments/${experimentId}/process_horizontal_load`;
-        yAxisLabel = 'Normal Stress (MPa)';
+        plotKey = 'normal_stress_MPa';
     } else if (channelName === 'Vertical Displacement') {
         endpoint = `/experiments/${experimentId}/process_vertical_displacement`;
-        yAxisLabel = 'Load Point Displacement (mm)';
+        plotKey = 'load_point_displacement_mm';
     } else if (channelName === 'Horizontal Displacement') {
         endpoint = `/experiments/${experimentId}/process_horizontal_displacement`;
-        yAxisLabel = 'Layer Thickness (mm)';
+        plotKey = 'layer_thickness_mm';
     }
 
     if (endpoint) {
@@ -92,29 +91,72 @@ async function processMeasurement(channelName) {
 
         const result = await response.json();
         console.log(result);
-        updatePlot(channelName, result, yAxisLabel);
+        plotData[plotKey] = result[plotKey];
+        updatePlot();
         alert(`Processed ${channelName} for experiment: ${experimentId}`);
     } else {
         alert('No processing method defined for this channel.');
     }
 }
 
-function updatePlot(channelName, data, yAxisLabel) {
+function updatePlot() {
     const plotDiv = document.getElementById('plot');
-    const trace = {
-        x: [...Array(data.length).keys()],
-        y: data,
-        mode: 'lines',
-        name: channelName
-    };
+    const traces = [];
+
+    if (plotData.shear_stress_MPa) {
+        traces.push({
+            x: [...Array(plotData.shear_stress_MPa.length).keys()],
+            y: plotData.shear_stress_MPa,
+            mode: 'lines',
+            name: 'Shear Stress (MPa)',
+            yaxis: 'y1'
+        });
+    }
+
+    if (plotData.normal_stress_MPa) {
+        traces.push({
+            x: [...Array(plotData.normal_stress_MPa.length).keys()],
+            y: plotData.normal_stress_MPa,
+            mode: 'lines',
+            name: 'Normal Stress (MPa)',
+            yaxis: 'y1'
+        });
+    }
+
+    if (plotData.load_point_displacement_mm) {
+        traces.push({
+            x: [...Array(plotData.load_point_displacement_mm.length).keys()],
+            y: plotData.load_point_displacement_mm,
+            mode: 'lines',
+            name: 'Load Point Displacement (mm)',
+            yaxis: 'y2'
+        });
+    }
+
+    if (plotData.layer_thickness_mm) {
+        traces.push({
+            x: [...Array(plotData.layer_thickness_mm.length).keys()],
+            y: plotData.layer_thickness_mm,
+            mode: 'lines',
+            name: 'Layer Thickness (mm)',
+            yaxis: 'y2'
+        });
+    }
 
     const layout = {
         title: 'Measurement Data',
         xaxis: { title: 'Record Number' },
-        yaxis: { title: yAxisLabel },
+        yaxis: { title: 'Stress (MPa)', side: 'left' },
+        yaxis2: {
+            title: 'Displacement (mm)',
+            overlaying: 'y',
+            side: 'right'
+        },
+        showlegend: true,
+        legend: { x: 1, xanchor: 'right', y: 1 }
     };
 
-    Plotly.newPlot(plotDiv, [trace], layout);
+    Plotly.react(plotDiv, traces, layout);
 }
 
 async function fetchExperiments() {
