@@ -22,6 +22,7 @@ async function fetchMeasurements() {
     `;
     const response = await fetch(`/experiments/${experimentId}/measurements`);
     const channelNames = await response.json();
+    console.log(channelNames); // Debug: Log to console
     displayChannelNames(channelNames);
 }
 
@@ -31,9 +32,28 @@ function displayChannelNames(channelNames) {
     const list = document.createElement('ul');
     channelNames.forEach(name => {
         const listItem = document.createElement('li');
-        
+
         const span = document.createElement('span');
         span.textContent = name;
+
+        // Create a dropdown for possible processing if the measurement is not standard
+        if (!["Horizontal Load", "Vertical Load", "Horizontal Displacement", "Vertical Displacement"].includes(name)) {
+            const processDropdown = document.createElement('select');
+            processDropdown.className = 'measurement-process-dropdown';
+
+            const defaultOption = document.createElement('option');
+            defaultOption.textContent = "Select Processing";
+            defaultOption.value = "";
+            processDropdown.appendChild(defaultOption);
+
+            // Add the processing option "synchronization to ultrasonic waveform"
+            const syncOption = document.createElement('option');
+            syncOption.textContent = "synchronization to ultrasonic waveform";
+            syncOption.value = "synchronization_to_ultrasonic_waveform";
+            processDropdown.appendChild(syncOption);
+
+            listItem.appendChild(processDropdown); // Attach dropdown to list item
+        }
 
         const processButton = document.createElement('button');
         processButton.textContent = 'Process measurement';
@@ -47,6 +67,7 @@ function displayChannelNames(channelNames) {
         listItem.appendChild(buttonContainer);
         list.appendChild(listItem);
     });
+
     measurementsDiv.appendChild(list);
 }
 

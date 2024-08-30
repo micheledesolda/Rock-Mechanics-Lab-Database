@@ -449,6 +449,9 @@ def main():
     fig.tight_layout()
     plt.show()
 
+def save_reduced_experiment():
+    pass
+
 if __name__ == "__main__":
     main()
 
