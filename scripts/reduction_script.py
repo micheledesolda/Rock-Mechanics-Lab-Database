@@ -396,6 +396,31 @@ def calculate_gouge_area_from_blocks_dimensions(experiment_id):
     gouge_area_m2 = 1e-6 * gouge_area_mm2    # covnersion to [m^2]
     return gouge_area_m2
 
+
+def synchronization_to_ultrasonic_waveforms(experiment_id, machine_id):
+    """
+    Mock method for synchronizing measurements to ultrasonic waveforms.
+
+    Parameters:
+    experiment_id (str): The ID of the experiment.
+    machine_id (str): The ID of the machine.
+
+    Returns:
+    dict: A mock result of the synchronization process.
+    """
+    print(f"Synchronizing experiment {experiment_id} on machine {machine_id} to ultrasonic waveforms.")
+    
+    # Mock result
+    mock_result = {
+        "status": "success",
+        "message": f"Experiment {experiment_id} synchronized to ultrasonic waveforms on machine {machine_id}."
+    }
+
+    return mock_result
+
+
+
+####################################################################
 def main():
     experiment_id = 's0037sa03min12'
     machine_id = 'Brava2'

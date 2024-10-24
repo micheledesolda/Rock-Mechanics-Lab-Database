@@ -9,7 +9,8 @@ from scripts.reduction_script import (
     process_horizontal_load_measurements,
     process_load_point_displacement,
     process_layer_thickness,
-    calculate_gouge_area_from_blocks_dimensions
+    calculate_gouge_area_from_blocks_dimensions,
+    synchronization_to_ultrasonic_waveforms
 )
 import csv
 
@@ -186,6 +187,26 @@ async def process_horizontal_displacement(data: ExperimentReductionRequest):
         )
         
         return {"layer_thickness_mm": layer_thickness_mm.tolist()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/{experiment_id}/sync_ultrasonic_waveforms", response_model=dict)
+async def sync_ultrasonic_waveforms(data: ExperimentReductionRequest):
+    """
+    Endpoint for synchronizing measurements to ultrasonic waveforms.
+    """
+    try:
+        experiment_info = experiment_service.get_experiment_by_id(data.experiment_id)
+        if not experiment_info:
+            raise HTTPException(status_code=404, detail="Experiment not found")
+
+        # Call the mock method from reduction_script
+        result = synchronization_to_ultrasonic_waveforms(
+            experiment_id=data.experiment_id,
+            machine_id=data.machine_id
+        )
+        
+        return {"synchronization_result": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

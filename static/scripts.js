@@ -1,6 +1,7 @@
 // scripts.js
 
 let plotData = {};
+const selectedProcessingOptions = {}; // Object to store selected processing options
 
 function fillExperimentId() {
     const fileInput = document.getElementById('experimentFile');
@@ -52,6 +53,11 @@ function displayChannelNames(channelNames) {
             syncOption.value = "synchronization_to_ultrasonic_waveform";
             processDropdown.appendChild(syncOption);
 
+            // Handle dropdown selection change
+            processDropdown.onchange = () => {
+                selectedProcessingOptions[name] = processDropdown.value; // Store the selected option
+            };
+
             listItem.appendChild(processDropdown); // Attach dropdown to list item
         }
 
@@ -87,6 +93,12 @@ async function processMeasurement(channelName) {
     let endpoint = '';
     let plotKey = '';
 
+    // Check if there is a selected processing option for non-standard measurements
+    if (selectedProcessingOptions[channelName] === "synchronization_to_ultrasonic_waveform") {
+        endpoint = `/experiments/${experimentId}/sync_ultrasonic_waveforms`;
+    }
+
+    // Process standard measurements
     if (channelName === 'Vertical Load') {
         endpoint = `/experiments/${experimentId}/process_vertical_load`;
         plotKey = 'shear_stress_MPa';
@@ -112,8 +124,13 @@ async function processMeasurement(channelName) {
 
         const result = await response.json();
         console.log(result);
-        plotData[plotKey] = result[plotKey];
-        updatePlot();
+
+        // Handle plot update only for standard measurements
+        if (plotKey && result[plotKey]) {
+            plotData[plotKey] = result[plotKey];
+            updatePlot();
+        }
+
         alert(`Processed ${channelName} for experiment: ${experimentId}`);
     } else {
         alert('No processing method defined for this channel.');
