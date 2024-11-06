@@ -1,7 +1,0 @@
-pymongo
-nptdms
-matplotlib
-fastapi
-uvicorn
-pytest
-mongoengine

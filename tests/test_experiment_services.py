@@ -1,4 +1,4 @@
-# src/tests/test_experiment_services.py
+# rock_mechanics_lab_database/tests/test_experiment_services.py
 
 import pytest
 import os

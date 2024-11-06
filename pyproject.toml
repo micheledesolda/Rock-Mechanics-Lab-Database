@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "rock_mechanics_lab_database"
+version = "0.1.0"
+description = "Database management for Rock Mechanics Lab Experiments. Built on Python and Mongodb"
+authors = ["micheledesolda <micheledesolda@yahoo.it>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+numpy = "^2.1.3"
+scipy = "^1.14.1"
+matplotlib = "^3.9.2"
+nptdms = "1.9.0"
+pymongo = "^4.5.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.3"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
