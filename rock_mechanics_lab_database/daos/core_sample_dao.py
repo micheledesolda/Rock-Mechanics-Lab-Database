@@ -8,7 +8,7 @@ import json
 import gridfs
 from nptdms import TdmsFile
 import matplotlib.pyplot as plt
-from daos.base_dao import BaseDao
+from rock_mechanics_lab_database.daos.base_dao import BaseDao
 
 # MongoDB connection details
 url = os.getenv("MONGO_URL") or "mongodb://localhost:27017/"

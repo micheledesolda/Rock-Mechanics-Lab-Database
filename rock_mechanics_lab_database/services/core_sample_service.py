@@ -1,7 +1,7 @@
 # rock_mechanics_lab_database/services/core_sample_service.py
 from typing import Dict, Any, List
-from daos.core_sample_dao import CoreSampleDao
-from services.base_service import BaseService
+from rock_mechanics_lab_database.daos.core_sample_dao import CoreSampleDao
+from rock_mechanics_lab_database.services.base_service import BaseService
 
 class CoreSampleService(BaseService):
     def __init__(self):

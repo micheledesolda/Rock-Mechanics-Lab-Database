@@ -3,9 +3,9 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from services.machine_service import MachineService
-from services.experiment_service import ExperimentService
-from services.block_service import BlockService
+from rock_mechanics_lab_database.services.machine_service import MachineService
+from rock_mechanics_lab_database.services.experiment_service import ExperimentService
+from rock_mechanics_lab_database.services.block_service import BlockService
 
 ms = MachineService()
 es = ExperimentService()

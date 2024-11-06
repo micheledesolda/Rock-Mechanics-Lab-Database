@@ -1,7 +1,7 @@
 # rock_mechanics_lab_database/services/sensor_service.py
 from typing import Dict, Any
-from daos.sensor_dao import SensorDao
-from services.base_service import BaseService
+from rock_mechanics_lab_database.daos.sensor_dao import SensorDao
+from rock_mechanics_lab_database.services.base_service import BaseService
 
 class SensorService(BaseService):
     def __init__(self):

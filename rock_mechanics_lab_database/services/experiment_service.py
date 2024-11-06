@@ -1,7 +1,7 @@
 # rock_mechanics_lab_database/services/experiment_service.py
 from typing import List, Dict, Any
-from daos.experiment_dao import ExperimentDao
-from services.base_service import BaseService
+from rock_mechanics_lab_database.daos.experiment_dao import ExperimentDao
+from rock_mechanics_lab_database.services.base_service import BaseService
 
 class ExperimentService(BaseService):
     def __init__(self):

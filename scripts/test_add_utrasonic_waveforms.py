@@ -1,6 +1,6 @@
 # scripts/test_adding_ultrasonic_waveforms.py
 import os
-from daos.experiment_dao import ExperimentDao
+from rock_mechanics_lab_database.daos.experiment_dao import ExperimentDao
 
 experiment_id = "s0108sw06car102030"
 experiment_dao = ExperimentDao()

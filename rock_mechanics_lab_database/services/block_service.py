@@ -1,7 +1,7 @@
 # rock_mechanics_lab_database/services/block_service.py
 from typing import Dict, List, Any
-from daos.block_dao import BlockDao
-from services.base_service import BaseService
+from rock_mechanics_lab_database.daos.block_dao import BlockDao
+from rock_mechanics_lab_database.services.base_service import BaseService
 
 class BlockService(BaseService):
     def __init__(self):

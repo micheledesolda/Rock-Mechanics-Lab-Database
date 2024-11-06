@@ -3,7 +3,7 @@ import pymongo
 from pymongo.collection import Collection
 from typing import Tuple, Dict, Any, Optional
 import os
-from utils.mongo_utils import is_mongodb_running, start_mongodb
+from rock_mechanics_lab_database.utils.mongo_utils import is_mongodb_running, start_mongodb
 
 # MongoDB connection details
 url = os.getenv("MONGO_URL") or "mongodb://localhost:27017/"

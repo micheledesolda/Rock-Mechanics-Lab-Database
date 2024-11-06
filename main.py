@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
-from utils.mongo_utils import is_mongodb_running, start_mongodb
+from rock_mechanics_lab_database.utils.mongo_utils import is_mongodb_running, start_mongodb
 from rock_mechanics_lab_database.api.routers import blocks, core_samples, experiments, gouges, machines, sensors
 
 # Check connection to database is working

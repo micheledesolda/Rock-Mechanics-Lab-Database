@@ -1,6 +1,6 @@
 # rock_mechanics_lab_database/services/base_service.py
 from typing import Any, Dict
-from daos.base_dao import BaseDao
+from rock_mechanics_lab_database.daos.base_dao import BaseDao
 
 class BaseService:
     def __init__(self, dao: BaseDao):

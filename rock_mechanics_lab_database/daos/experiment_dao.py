@@ -5,9 +5,9 @@ import csv
 import json
 import gridfs
 from nptdms import TdmsFile
-from daos.base_dao import BaseDao
-from daos.block_dao import BlockDao
-from daos.gouge_dao import GougeDao
+from rock_mechanics_lab_database.daos.base_dao import BaseDao
+from rock_mechanics_lab_database.daos.block_dao import BlockDao
+from rock_mechanics_lab_database.daos.gouge_dao import GougeDao
 
 # Constants
 MAXIMUM_DOCUMENT_SIZE = 16000000        # 16 MB, as for mongodb documentation

@@ -1,12 +1,12 @@
 # srcipts/seed_database.py
 import os
-from daos.experiment_dao import ExperimentDao
-from daos.block_dao import BlockDao
-from daos.gouge_dao import GougeDao
-from daos.sensor_dao import SensorDao
-from daos.core_sample_dao import CoreSampleDao
-from daos.machine_dao import MachineDao
-from utils.mongo_utils import is_mongodb_running, start_mongodb
+from rock_mechanics_lab_database.daos.experiment_dao import ExperimentDao
+from rock_mechanics_lab_database.daos.block_dao import BlockDao
+from rock_mechanics_lab_database.daos.gouge_dao import GougeDao
+from rock_mechanics_lab_database.daos.sensor_dao import SensorDao
+from rock_mechanics_lab_database.daos.core_sample_dao import CoreSampleDao
+from rock_mechanics_lab_database.daos.machine_dao import MachineDao
+from rock_mechanics_lab_database.utils.mongo_utils import is_mongodb_running, start_mongodb
 
 def seed_database():
 

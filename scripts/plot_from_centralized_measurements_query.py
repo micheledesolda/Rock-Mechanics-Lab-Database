@@ -1,5 +1,5 @@
 # scripts/plot_from_centralized_measurements_query.py
-from daos.experiment_dao import ExperimentDao
+from rock_mechanics_lab_database.daos.experiment_dao import ExperimentDao
 import os
 import matplotlib.pyplot as plt
 

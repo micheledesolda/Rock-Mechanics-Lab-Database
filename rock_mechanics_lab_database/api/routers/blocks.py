@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
-from services.block_service import BlockService
+from rock_mechanics_lab_database.services.block_service import BlockService
 
 router = APIRouter()
 block_service = BlockService()

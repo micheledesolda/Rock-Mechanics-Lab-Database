@@ -1,8 +1,8 @@
 # rock_mechanics_lab_database/daos/block_dao.py
 from typing import List, Dict, Optional, Union, Tuple, Any
 import os
-from daos.base_dao import BaseDao
-from daos.sensor_dao import SensorDao
+from rock_mechanics_lab_database.daos.base_dao import BaseDao
+from rock_mechanics_lab_database.daos.sensor_dao import SensorDao
 
 # MongoDB connection details
 url = os.getenv("MONGO_URL") or "mongodb://localhost:27017/"

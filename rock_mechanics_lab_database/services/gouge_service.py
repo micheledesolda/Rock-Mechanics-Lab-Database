@@ -1,7 +1,7 @@
 # rock_mechanics_lab_database/services/gouge_service.py
 from typing import Dict, Any
-from daos.gouge_dao import GougeDao
-from services.base_service import BaseService
+from rock_mechanics_lab_database.daos.gouge_dao import GougeDao
+from rock_mechanics_lab_database.services.base_service import BaseService
 
 class GougeService(BaseService):
     def __init__(self):

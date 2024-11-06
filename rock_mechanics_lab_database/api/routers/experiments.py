@@ -3,7 +3,7 @@
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from typing import List, Dict, Optional, Any
-from services.experiment_service import ExperimentService
+from rock_mechanics_lab_database.services.experiment_service import ExperimentService
 from scripts.reduction_script import (
     process_vertical_load_measurements,
     process_horizontal_load_measurements,
